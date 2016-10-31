@@ -42,7 +42,7 @@
 
     # install electron globally
     $ npm install electron -g
-    $ npm install electron --save-dev
+    # $ npm install electron --save-dev
     
     # put in content from [Quick Start](https://github.com/atom/electron/blob/master/docs/tutorial/quick-start.md)
     $ cd app
