@@ -1,0 +1,6 @@
+{
+  "id": "hello-world",
+  "input_directory": ".",
+  "config_file": "Config/02_Convolution_ndl_deprecated.cntk"
+}
+job-config.json
