@@ -1,0 +1,5 @@
+{
+  "id":"pool1",
+  "vm_size" : "STANDARD_D1_V2",
+  "vm_count" : 3
+}
