@@ -1,0 +1,62 @@
+{
+  "name": "trieste",
+  "version": "0.0.1",
+  "description": "Run Deep Learning Workloads with Azure Batch",
+  "author": "John Azariah",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/johnazariah/trieste/issues"
+  },
+  "homepage": "https://github.com/johnazariah/trieste#readme",
+  "main": "app/electron-index.js",
+  "scripts": {
+    "test": "electron .",
+    "start": "tsc && concurrently \"tsc -w\" \"lite-server\" ",
+    "lite": "lite-server",
+    "tsc": "tsc",
+    "tsc:w": "tsc -w"
+  },
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "https://github.com/angular/angular.io/blob/master/LICENSE"
+    }
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/johnazariah/trieste.git"
+  },
+  "keywords": [
+    "Azure",
+    "Batch",
+    "\"Deep Learning\""
+  ],
+  "dependencies": {
+    "@angular/common": "~2.1.1",
+    "@angular/compiler": "~2.1.1",
+    "@angular/core": "~2.1.1",
+    "@angular/forms": "~2.1.1",
+    "@angular/http": "~2.1.1",
+    "@angular/platform-browser": "~2.1.1",
+    "@angular/platform-browser-dynamic": "~2.1.1",
+    "@angular/router": "~3.1.1",
+    "@angular/upgrade": "~2.1.1",
+    "angular-in-memory-web-api": "~0.1.13",
+    "core-js": "^2.4.1",
+    "reflect-metadata": "^0.1.8",
+    "rxjs": "5.0.0-beta.12",
+    "systemjs": "0.19.39",
+    "zone.js": "^0.6.25"
+  },
+  "devDependencies": {
+    "@types/electron": "^1.4.25",
+    "@types/core-js": "^0.9.34",
+    "@types/node": "^6.0.45",
+    "@types/q": "0.0.32",
+    "electron": "^1.4.2",
+    "concurrently": "^3.0.0",
+    "lite-server": "^2.2.2",
+    "typescript": "^2.0.3",
+    "q": "^1.4.1"
+  }
+}
