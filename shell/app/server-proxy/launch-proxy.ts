@@ -1,4 +1,3 @@
-
 /**
  * Node.js server side proxy class for injecting into the client
  */
@@ -17,4 +16,3 @@ export default class LaunchProxy {
         });
     }
 }
-
