@@ -5,10 +5,16 @@
 
 export default class LaunchProxy {
     public launch(message: string) {
-        console.log("*** LAUNCHING *** :: ", message);
+        const exec = require('child_process').exec;
 
-        const spawn = require('child_process').spawn;
-        spawn('notepad.exe');
+        exec('cd .. && python trieste.py cluster create', (err, stdout, stderr) => {
+            if (err) {
+                console.error(err);
+                return;
+            }
+            console.log(stdout);
+            console.log(stderr);
+        });
     }
 }
 

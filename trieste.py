@@ -28,7 +28,6 @@ from __future__ import division, print_function, unicode_literals
 
 import logging.handlers
 from collections import namedtuple
-from batch_shipyard import convoy
 
 import click
 
