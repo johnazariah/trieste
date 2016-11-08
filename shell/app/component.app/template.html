@@ -1,0 +1,63 @@
+<body class="hold-transition skin-blue sidebar-mini">
+<div class="wrapper">
+  <header class="main-header">
+
+    <!-- Logo -->
+    <span class="logo logo-lg">Microsoft Azure Batch Deep Learning Toolkit</span>
+
+    <!-- Header Navbar: style can be found in header.less -->
+    <nav class="navbar navbar-static-top">      
+      <!-- Navbar Right Menu -->
+      <div class="navbar-custom-menu">
+        <ul class="nav navbar-nav">          
+          <!-- User Account: style can be found in dropdown.less -->
+          <li class="dropdown user user-menu">              
+            <a href="#">
+                <i class ="fa fa-link glyphicon glyphicon-cog" aria-hidden="true"></i>
+                <span>Credentials</span>
+            </a>
+        </ul>
+      </div>
+    </nav>
+  </header>
+  <!-- Left side column. contains the logo and sidebar -->
+  <aside class="main-sidebar">
+    <!-- sidebar: style can be found in sidebar.less -->
+    <section class="sidebar">
+        <ul class="sidebar-menu">
+            <li>
+                <a routerLink="cluster" routerLinkActive="active">
+                    <i class ="fa fa-link glyphicon glyphicon-equalizer" aria-hidden="true"></i>
+                    <span>Clusters</span>
+                </a>
+            </li>
+            <li>
+                <a routerLink="job" routerLinkActive="active">
+                    <i class ="fa fa-link glyphicon glyphicon-tasks" aria-hidden="true"></i>
+                    <span>Jobs</span>
+                </a>
+            </li>
+        </ul>
+    </section>
+    <!-- /.sidebar -->
+  </aside>
+
+  <!-- Content Wrapper. Contains page content -->
+  <div class="content-wrapper">
+    <!-- Main content -->
+    <section class="content">
+      <router-outlet></router-outlet>
+    </section>
+    <!-- /.content -->
+  </div>
+  <!-- /.content-wrapper -->
+
+  <footer class="main-footer">
+    <div class="pull-right hidden-xs">
+      <b>Version</b> 1.0.0
+    </div>
+    <strong>Copyright &copy; 2016 <a href="http://www.microsoft.com">Microsoft Corp.</a>.</strong>All rights reserved.
+  </footer>
+</div>
+<!-- ./wrapper -->
+</body>

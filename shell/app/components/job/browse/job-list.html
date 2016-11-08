@@ -1,0 +1,15 @@
+<bex-scrollable (scrollBottom)="onScrollToBottom($event)">
+    <bex-quick-list>
+        <bex-quick-list-item *ngFor="let job of data.items | async" [routerLink]="['/jobs/', job.id]" routerLinkActive="selected">
+            <bex-quick-list-item-status [warning]="hasWarning(job)" [tooltip]="warningText(job)">
+            </bex-quick-list-item-status>
+
+            <h4 bex-quick-list-item-title>{{job.id}}</h4>
+            <p bex-quick-list-item-field>{{job.state}}</p>
+            <div bex-quick-list-item-preview>
+                <bex-job-stats-preview [job]="job"></bex-job-stats-preview>
+            </div>
+        </bex-quick-list-item>
+    </bex-quick-list>
+	<bex-loading [status]="status | async" *ngIf="data.hasMore | async"></bex-loading>
+</bex-scrollable>

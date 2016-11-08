@@ -1,0 +1,13 @@
+<div [ngSwitch]="displayStatus | async">
+	<div [hidden]="(displayStatus | async) !== statuses.Loading" class="loading-icon">
+		<div class="spinner">
+			<div class="double-bounce1"></div>
+			<div class="double-bounce2"></div>
+		</div>
+	</div>
+	<div *ngSwitchCase="statuses.Error">
+	</div>
+	<div [@fadeInOut]="displayStatus | async">
+		<ng-content></ng-content>
+	</div>
+</div>

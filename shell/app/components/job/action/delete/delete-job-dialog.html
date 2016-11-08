@@ -1,0 +1,17 @@
+<div class="confirmation-dialog">
+	<div class="message">
+		Do you want to delete the job: '{{jobId}}'?
+        <p>
+            Warning! Deleting job '<b>{{jobId}}</b>' is irreversible. The action you're about to take can't be undone.
+            Clicking OK will delete this job, its tasks, and any related resources permanently.
+        </p>
+	</div>
+	<div class="buttons">
+		<button md-raised-button color="warn" type="button" (click)="ok()">Yes</button>
+		<button md-raised-button type="primary" (click)="dialogRef.close()">No</button>
+        <i *ngIf="processing" class="fa fa-gear fa-2 fa-spin"></i>
+	</div>
+    <div [hidden]="!hasError()" class="error">
+        <p>{{errorText()}}</p>
+    </div>
+</div>

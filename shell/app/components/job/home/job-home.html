@@ -1,0 +1,26 @@
+<bex-list-and-show-layout>
+	<div bex-quick-filter-content>
+		<div class="quicksearch">
+			<input [formControl]="quickSearchQuery" placeholder="Search" />
+			<i class="fa fa-filter fa-2x" (click)="toggleFilter()"></i>
+		</div>
+		<hr />
+		<div class="context-button-bar">
+			<bex-refresh-btn [refresh]="jobList.refresh"></bex-refresh-btn>
+			<button md-mini-fab color="primary" title="Add a job" (click)="addJob()">
+                <i class="fa fa-plus"></i>
+            </button>
+		</div>
+	</div>
+	<div bex-list-content>
+		<bex-job-list #jobList [filter]="filter" class="flex-fill"></bex-job-list>
+	</div>
+	<div bex-show-content>
+		<router-outlet></router-outlet>
+	</div>
+
+	<!--<div bex-show-advanced-filter>
+		<bex-job-advanced-filter (change)="advancedFilterChanged($event)">
+		</bex-job-advanced-filter>
+	</div>-->
+</bex-list-and-show-layout>

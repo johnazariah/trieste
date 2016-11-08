@@ -1,0 +1,64 @@
+<bex-loading [status]="data.newDataStatus | async">
+	<div *ngIf="pool">
+		<md-card class="overview">
+			<md-card-title-group style="margin: 0px;">
+				<div style="align-items:center;">
+					<bex-refresh-btn [refresh]="refreshPool"></bex-refresh-btn>
+				</div>
+				<div style="margin-left:12px; margin-right:auto;">
+					<md-card-title>{{pool.id}}</md-card-title>
+					<md-card-subtitle>{{pool.vmSize}}, {{pool.allocationState}}</md-card-subtitle>
+				</div>
+				<div>
+					<!--
+                        Want to add this but there is some recursive call or something going
+                        on in the getTooltip method causing stack overflows.
+                        Once we fix that, use the nodes-preview component instead
+
+                        This is tracked at https://github.com/angular/material2/issues/1157
+                        <bex-pool-nodes-preview [pool]="pool"></bex-pool-nodes-preview>
+                    -->
+					<h4>{{pool.currentDedicated}} / {{pool.targetDedicated}}</h4>
+					<h5>Nodes</h5>
+				</div>
+			</md-card-title-group>
+			<md-card-content>
+				<!-- TODO: Use Moment for date formatting -->
+				<p>Last resized {{lastResize}}</p>
+				<p><i class="fa fa-{{poolOsIcon}}" aria-hidden="true"></i> {{poolOs}}</p>
+			</md-card-content>
+			<md-card-actions layout="row" layout-align="end center">
+				<button md-button>RESIZE</button>
+				<button md-button>CLONE</button>
+				<button md-button (click)="deletePool()">DELETE</button>
+			</md-card-actions>
+		</md-card>
+		<md-card class="details">
+			<md-tab-group>
+				<md-tab>
+					<template md-tab-label>Nodes</template>
+					<template md-tab-content class="md-tab-no-padding">
+						<bex-node-list [poolId]="poolId" [quickList]="false"></bex-node-list>
+					</template>
+				</md-tab>
+				<md-tab>
+					<template md-tab-label>Start Task</template>
+					<template md-tab-content>
+						<div class="tab-padding">
+							<h3>Update your start task here</h3>
+							<p>...</p>
+						</div>
+					</template>
+				</md-tab>
+				<md-tab>
+					<template md-tab-label>Properties</template>
+					<template md-tab-content>
+						<div class="tab-padding">
+							<bex-pool-properties [pool]="pool"></bex-pool-properties>
+						</div>
+					</template>
+				</md-tab>
+			</md-tab-group>
+		</md-card>
+	</div>
+</bex-loading>

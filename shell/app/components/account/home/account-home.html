@@ -1,0 +1,20 @@
+<bex-list-and-show-layout>
+	<div bex-quick-filter-content>
+		<div class="quicksearch">
+			<input [formControl]="quickSearchQuery" placeholder="Search" />
+			<i class="fa fa-filter fa-2x"></i>
+		</div>
+		<hr />
+		<div class="context-button-bar">
+			<button md-mini-fab color="primary" title="Add an account" (click)="addAccount()">
+                <i class="fa fa-plus"></i>
+            </button>
+		</div>
+	</div>
+	<div bex-list-content>
+		<bex-account-list [filter]="filter" class="flex-fill"></bex-account-list>
+	</div>
+	<div bex-show-content>
+		<router-outlet></router-outlet>
+	</div>
+</bex-list-and-show-layout>

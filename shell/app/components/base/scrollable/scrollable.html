@@ -1,0 +1,10 @@
+<div #scrollable class="scrollable-container">
+	<div class="simplebar-track vertical" #trackY (mouseenter)="flashScrollbar()" [class.dragging]="dragging">
+		<div class="simplebar-scrollbar" #scrollbarY [class.visible]="scrollbarVisible" (mousedown)="startDrag($event)"></div>
+	</div>
+	<div #scrollContent class="simplebar-scroll-content" (scroll)="onScroll()">
+		<div class="simplebar-content" #content>
+			<ng-content></ng-content>
+		</div>
+	</div>
+</div>

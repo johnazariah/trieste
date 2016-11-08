@@ -1,0 +1,6 @@
+<bex-property-list>
+    <bex-property-group label="Environment settings" class="wide">
+        <p *ngIf="environmentSettings.length === 0">No environment settings were found ...</p>
+        <bex-text-property *ngFor="let setting of environmentSettings" label="{{setting.name}}" [value]="setting.value"></bex-text-property>
+    </bex-property-group>
+</bex-property-list> 

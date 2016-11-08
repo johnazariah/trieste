@@ -1,0 +1,25 @@
+<bex-list-and-show-layout #layout>
+    <div bex-quick-filter-content>
+        <div class="quicksearch">
+            <input [formControl]="quickSearchQuery" placeholder="Search" />
+            <i class="fa fa-filter fa-2x" (click)="layout.toggleFilter()"></i>
+        </div>
+        <hr />
+        <div class="context-button-bar">
+            <bex-refresh-btn [refresh]="poolList.refreshPools"></bex-refresh-btn>
+            <button md-mini-fab color="primary" title="Create pool">
+                <i class="fa fa-plus"></i>
+            </button>
+        </div>
+    </div>
+    <div bex-list-content>
+        <bex-pool-list #poolList [filter]="filter" (itemSelected)="layout.itemSelected($event)" class="flex-fill" [quickList]="!(layout.showAdvancedFilter | async)"></bex-pool-list>
+    </div>
+    <div bex-show-content>
+        <router-outlet></router-outlet>
+    </div>
+    <div bex-show-advanced-filter>
+        <bex-pool-advanced-filter (change)="advancedFilterChanged($event)">
+        </bex-pool-advanced-filter>
+    </div>
+</bex-list-and-show-layout>

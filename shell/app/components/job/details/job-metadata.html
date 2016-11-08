@@ -1,0 +1,6 @@
+<bex-property-list>
+    <bex-property-group label="Metadata" class="wide">
+        <p *ngIf="jobMetadata.length === 0">This job contains no metadata ...</p>
+        <bex-text-property *ngFor="let metaItem of jobMetadata" label="{{metaItem.name}}" [value]="metaItem.value"></bex-text-property>
+    </bex-property-group>
+</bex-property-list> 

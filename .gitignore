@@ -1,0 +1,8 @@
+.idea
+.vscode
+__pycache__/
+config/
+batch_shipyard/
+node_modules/
+**/app/**/*.js
+**/*.js.map

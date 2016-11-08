@@ -1,0 +1,3 @@
+[submodule "batch_shipyard"]
+	path = batch_shipyard
+	url = https://github.com/Azure/batch-shipyard.git

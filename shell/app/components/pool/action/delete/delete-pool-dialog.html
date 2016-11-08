@@ -1,0 +1,10 @@
+<div class="confirmation-dialog">
+	<div class="message">
+		Are you sure you want to delete pool '{{poolName}}'?
+        This is a non-reversible action. 
+	</div>
+	<div class="buttons">
+		<button md-raised-button color="warn" type="button" (click)="destroyPool()">Yes</button>
+		<button md-raised-button type="primary" (click)="dialogRef.close()">No</button>
+	</div>
+</div>

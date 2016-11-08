@@ -1,0 +1,44 @@
+<div class="quicksearch">
+    <input [formControl]="searchQuery" placeholder="Filter by task id" />
+    <i class="fa fa-filter fa-2x"></i>
+</div>
+<hr />
+<div class="context-button-bar">
+    <bex-refresh-btn [refresh]="refresh"></bex-refresh-btn>
+    <button md-mini-fab color="primary" title="Add a task">
+        <i class="fa fa-plus"></i>
+    </button>
+</div>
+
+<bex-quick-list *ngIf="quickList">
+    <bex-quick-list-item *ngFor="let task of data.items | async" routerLinkActive="selected">
+        <bex-quick-list-item-status [warning]="hasWarning(task)" [tooltip]="warningText(task)">
+        </bex-quick-list-item-status>
+
+        <h4 bex-quick-list-item-title>{{task.id}} {{task.displayName}}</h4>
+        <p bex-quick-list-item-field>{{task.state}}</p>
+        <div bex-quick-list-item-preview>
+            <bex-task-preview [task]="task"></bex-task-preview>
+        </div>
+    </bex-quick-list-item>
+</bex-quick-list>
+
+<bex-table *ngIf="!quickList">
+    <bex-thead>
+        <bex-column>Id</bex-column>
+        <bex-column>State</bex-column>
+        <bex-column>Creation time</bex-column>
+        <bex-column>Command line</bex-column>
+    </bex-thead>
+
+    <bex-tbody>
+        <bex-row *ngFor="let task of data.items | async">
+            <bex-cell>{{task.id}}</bex-cell>
+            <bex-cell>{{task.state}}</bex-cell>
+            <bex-cell>{{task.creationTime}}</bex-cell>
+            <bex-cell>{{task.commandLine}}</bex-cell>
+        </bex-row>
+    </bex-tbody>
+</bex-table>
+
+<bex-loading [status]="status | async" *ngIf="data.hasMore | async"></bex-loading>

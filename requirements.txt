@@ -1,0 +1,7 @@
+# bring in batch-shipyard requirements
+-r batch_shipyard/requirements.txt
+
+# trieste requirements
+jsonschema==2.5.1
+PyMonad==1.3
+
