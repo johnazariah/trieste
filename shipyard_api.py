@@ -36,47 +36,72 @@ sys.path.append('batch_shipyard')
 import batch_shipyard.convoy.fleet as convoy_fleet  # noqa
 
 class ShipyardApi:
-    def _get_batch_client(self, config_batch_credentials):
-        batch_credentials = batch_auth.SharedKeyCredentials(
-            config_batch_credentials['account'],
-            config_batch_credentials['account_key'])
-        return batch_service_client.BatchServiceClient(
-            batch_credentials,
-            base_url=config_batch_credentials['account_service_url'])
-
     def __init__(self, config):
+        def set_batch_client(config_batch_credentials):
+            batch_credentials = batch_auth.SharedKeyCredentials(
+                config_batch_credentials['account'],
+                config_batch_credentials['account_key'])
+            
+            self.batch_client = batch_service_client.BatchServiceClient(
+                batch_credentials,
+                base_url=config_batch_credentials['account_service_url'])            
+            self.batch_client.config.add_user_agent('batch-shipyard/{}'.format('2.0.0rc2'))
+
+        def set_storage_clients(config_storage_credentials):
+            parameters = {
+                'account_name': config_storage_credentials['account'],
+                'account_key': config_storage_credentials['account_key'],
+                'endpoint_suffix': config_storage_credentials['endpoint']
+            }
+
+            self.blob_client = azure_storage_blob.BlockBlobService(**parameters)
+            self.queue_client = azure_storage_queue.QueueService(**parameters)
+            self.table_client = azure_storage_table.TableService(**parameters)
+        
         self.config = config
-        self.config["_auto_confirm"] = False
 
-        self.batch_client = self._get_batch_client(
-            config['credentials']['batch'])
-        self.batch_client.config.add_user_agent(
-            'batch-shipyard/{}'.format('2.0.0rc2'))
-
-        config_storage_credentials = \
-            config['credentials']['storage']['__storage_account_name__']
-
-        parameters = {
-            'account_name': config_storage_credentials['account'],
-            'account_key': config_storage_credentials['account_key'],
-            'endpoint_suffix': config_storage_credentials['endpoint']
+        self.config["batch_shipyard"] = {
+            "storage_account_settings": "__storage_account_name__",
+            "storage_entity_prefix": "shipyard"
         }
+        self.config["global_resources"] = {
+            "docker_images": [
+                "alfpark/cntk:1.7.2-cpu-openmpi"
+            ]
+        }
+        self.config["_auto_confirm"] = False
+        self.config["_verbose"] = True
 
-        self.blob_client = azure_storage_blob.BlockBlobService(**parameters)
-        self.queue_client = azure_storage_queue.QueueService(**parameters)
-        self.table_client = azure_storage_table.TableService(**parameters)
+        set_batch_client(config['credentials']['batch'])
+        set_storage_clients(config['credentials']['storage']['__storage_account_name__'])
+
+    def call_shipyard_method(self, f):
+        convoy_fleet.populate_global_settings(self.config, False)
+        convoy_fleet.adjust_general_settings(self.config)
+        f()
 
 class ClusterApi(ShipyardApi):
     def __init__(self, shipyard_config):
         super(ClusterApi, self).__init__(shipyard_config)
-
-
-    def create_cluster(self, id, vm_count):
-        if id is not None:
-            self.config["pool_specification"]["id"] = id
-        self.config["pool_specification"]["id"] = id
-        self.config["pool_specification"]["vm_count"] = vm_count
-
+    
+    def create_cluster(self, cluster_id, vm_size, vm_count):
+        def add_pool_configuration():
+            self.config["pool_specification"] = {
+                "id": cluster_id,
+                "vm_size": vm_size,
+                "vm_count": vm_count,
+                "inter_node_communication_enabled": True,
+                "publisher": "Canonical",
+                "offer": "UbuntuServer",
+                "sku": "16.04.0-LTS",
+                "ssh": {
+                    "username": "docker"
+                },
+                "reboot_on_start_task_failed": False,
+                "block_until_all_global_resources_loaded": True
+            }
+        
+        add_pool_configuration()        
         convoy_fleet.populate_global_settings(self.config, True)
         convoy_fleet.adjust_general_settings(self.config)
         convoy_fleet.action_pool_add(
@@ -86,56 +111,55 @@ class ClusterApi(ShipyardApi):
             self.table_client,
             self.config)
 
-
     def list_clusters(self):
         return self.batch_client.pool.list()
-
 
     def delete_cluster(self, id):
         self.batch_client.pool.delete(id or self.config["pool_specification"]["id"])
 
-class JobApi(ShipyardApi):
+class RunApi(ShipyardApi):
     def __init__(self, shipyard_config):
-        super(JobApi, self).__init__(shipyard_config)
+        super(RunApi, self).__init__(shipyard_config)
 
+    def submit_run(self, run_id, cluster_id, recreate):
+        def add_run_configuration():
+            self.config["job_specifications"] = {
+                "id": run_id,
+                "tasks": [
+                    {
+                        "image": "alfpark/cntk:1.7.2-cpu-openmpi",
+                        "remove_container_after_exit": True,
+                        "command": cntk_shell_cmd
+                    }
+                ]
+            }        
+            self.config["pool_specification"]["id"] = cluster_id
+        self.call_shipyard_method(lambda: 
+            convoy_fleet.action_runs_add(
+                self.batch_client,
+                self.blob_client,
+                self.config,
+                recreate))
 
-    def submit_job(self, id, cluster_id, recreate):
+    def list_runs_by_cluster(self, cluster_id):
+        return self.batch_client.run.list()
+
+    def list_runs_by_cluster(self, cluster_id):
+        return self.batch_client.run.list()
+
+    def stream_file(self, run_id, cluster_id):
         if id is not None:
             self.config["job_specifications"][0]["id"] = id
         if cluster_id is not None:
             self.config["pool_specification"]["id"] = cluster_id
-        convoy_fleet.populate_global_settings(self.config, False)
-        convoy_fleet.adjust_general_settings(self.config)
-        convoy_fleet.action_jobs_add(
-            self.batch_client,
-            self.blob_client,
-            self.config,
-            recreate)
+        
+        self.call_shipyard_method(lambda: 
+            convoy_fleet.action_data_stream(
+                self.batch_client,
+                self.config,
+                "{},{},stderr.txt".format(id, task_id),
+                True))
 
-
-    def list_jobs(self):
-        return self.batch_client.job.list()
-
-
-    def list_tasks_for_job(self, job_id):
-        return self.batch_client.task.list(job_id or self.config["job_specifications"]["id"])
-
-    def stream_file(self, id, task_id, cluster_id):
-        if id is not None:
-            self.config["job_specifications"][0]["id"] = id
-        if cluster_id is not None:
-            self.config["pool_specification"]["id"] = cluster_id
-        convoy_fleet.populate_global_settings(self.config, False)
-        convoy_fleet.adjust_general_settings(self.config)
-        convoy_fleet.action_data_stream(
-            self.batch_client,
-            self.config,
-            "{},{},stderr.txt".format(id, task_id),
-            True)
-
-
-
-    def delete_job(self, id):
-        self.batch_client.job.delete(id or self.config["job_specifications"]["id"])
+    def delete_run(self, id):
+        self.batch_client.run.delete(id or self.config["run_specifications"]["id"])
         pass
-

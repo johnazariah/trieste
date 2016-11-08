@@ -60,15 +60,14 @@ def _to_shipyard_config(
         convert
     )
 
-def get_merged_shipyard_config(inputs):
+def get_merged_shipyard_config(inputs, zero):
     def to_config_opt(tuple):
         return _to_shipyard_config(*tuple)
 
     def plus(left, right):
         return Just(_merge_dict).amap(left).amap(right)
 
-    zero = Just({})
-    result_opt = reduce(plus, map(to_config_opt, inputs), zero)
+    result_opt = reduce(plus, map(to_config_opt, inputs), Just(zero))
 
     return result_opt.getValue()
 
