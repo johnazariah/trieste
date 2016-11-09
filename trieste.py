@@ -53,21 +53,6 @@ class TriesteConfig(object):
 pass_cli_context = click.make_pass_decorator(TriesteConfig, ensure=True)
 
 
-def _config_option(f):
-    def callback(ctx, param, value):
-        ctx_ = value
-        ctx_ = ctx.ensure_object(TriesteConfig)
-        ctx_.general_config_file = value
-        return value
-
-    return click.option(
-        '--config',
-        default='config/config.json',
-        expose_value=False,
-        help='(full) path to Configuration JSON file',
-        callback=callback)(f)
-
-
 def _credentials_option(f):
     def callback(ctx, param, value):
         ctx_ = ctx.ensure_object(TriesteConfig)
@@ -96,7 +81,6 @@ def _verbose_option(f):
         callback=callback)(f)
 
 def common_options(f):
-    f = _config_option(f)
     f = _credentials_option(f)
     f = _verbose_option(f)
     return f
@@ -118,7 +102,7 @@ def cluster(ctx):
 @click.option(
     '--cluster-id',
     default=None,
-    help='The (optional) name of the cluster to create'
+    help='The name of the cluster to create'
 )
 @click.option('--vm-size', 
     type=click.Choice([
@@ -133,17 +117,17 @@ def cluster(ctx):
 @click.option(
     '--vm-count',
     default=1,
-    help='The (optional) number of nodes required in the cluster'
+    help='The number of nodes required in the cluster'
 )
 @common_options
 @pass_cli_context
-def cluster_create(ctx, cluster_config, cluster_id, vm_size, vm_count):
-    """Create a cluster with the specified configuration file"""
+def cluster_create(ctx, cluster_id, vm_size, vm_count):
+    """Create a cluster with the specifications provided"""
     inputs = [
         (ctx.credentials_file, "api/schema/credentials-schema.json",
          configurations.to_shipyard_credentials)
     ]
-    config = configurations.get_merged_shipyard_config(inputs, {})
+    config = configurations.get_merged_shipyard_config(inputs)
     cluster_api = ClusterApi(config)
     cluster_api.create_cluster(cluster_id, vm_size, vm_count)
 
@@ -156,7 +140,7 @@ def cluster_list(ctx):
         (ctx.credentials_file, "api/schema/credentials-schema.json",
          configurations.to_shipyard_credentials)
     ]
-    config = configurations.get_merged_shipyard_config(inputs, {})
+    config = configurations.get_merged_shipyard_config(inputs)
     cluster_api = ClusterApi(config)
     clusters = cluster_api.list_clusters()
 
@@ -166,26 +150,21 @@ def cluster_list(ctx):
 
 @cluster.command('delete')
 @click.option(
-    '--cluster-config',
-    default='config/cluster-config.json',
-    help='(full) path to Pool Configuration JSON file'
-)
-@click.option(
-    '--id',
+    '--cluster-id',
     default=None,
-    help='The (optional) name of the cluster to delete. This overrides the value in the cluster-config file'
+    help='The name of the cluster to delete.'
 )
 @common_options
 @pass_cli_context
-def cluster_delete(ctx, id):
-    """Delete a cluster with the specified configuration name"""
+def cluster_delete(ctx, cluster_id):
+    """Delete a specific cluster"""
     inputs = [
         (ctx.credentials_file, "api/schema/credentials-schema.json",
          configurations.to_shipyard_credentials)
     ]
     config = configurations.get_merged_shipyard_config(inputs)
     cluster_api = ClusterApi(config)
-    cluster_api.delete_cluster(id)
+    cluster_api.delete_cluster(cluster_id)
 
 
 @cli.group()
@@ -198,16 +177,16 @@ def run(ctx):
 @click.option(
     '--run-id',
     default=None,
-    help='The (optional) name of the run to submit. This overrides the value in the run-config file'
+    help='The name of the run to submit'
 )
 @click.option(
     '--cluster-id',
     default=None,
-    help='The (optional) name of the cluster to submit to. This overrides the value in the cluster-config file'
+    help='The name of the cluster on which to submit the run to'
 )
 @common_options
 @pass_cli_context
-def run_submit(ctx, run_config, cluster_config, id, cluster_id):
+def run_submit(ctx, run_id, cluster_id):
     """Submit a run to the specified cluster"""
     inputs = [
         (ctx.credentials_file, "api/schema/credentials-schema.json",
@@ -215,14 +194,19 @@ def run_submit(ctx, run_config, cluster_config, id, cluster_id):
     ]
     config = configurations.get_merged_shipyard_config(inputs)
     run_api = RunApi(config)
-    run_api.submit_run(id, cluster_id, recreate)
+    run_api.submit_run(run_id, cluster_id)
 
 
 @run.command('list')
+@click.option(
+    '--cluster-id',
+    default=None,
+    help='The name of the cluster'
+)
 @common_options
 @pass_cli_context
-def run_list(ctx):
-    """List all runs"""
+def run_list(ctx, cluster_id):
+    """List all runs on a specific cluster"""
     inputs = [
         (ctx.credentials_file, "api/schema/credentials-schema.json",
          configurations.to_shipyard_credentials)
@@ -230,30 +214,25 @@ def run_list(ctx):
     config = configurations.get_merged_shipyard_config(inputs)
     run_api = RunApi(config)
 
-    runs = run_api.list_runs()
+    runs = run_api.list_runs(cluster_id)
     for j in runs:
         print(j.id)
 
 
 @run.command('stream-file')
 @click.option(
-    '--run-config',
-    default='config/run-config.json',
-    help='(full) path to run Configuration JSON file'
-)
-@click.option(
     '--run-id',
     default=None,
-    help='The (optional) name of the run to get output for'
+    help='The name of the run to get output for'
 )
 @click.option(
     '--cluster-id',
     default=None,
-    help='The (optional) name of the run to get tasks for'
+    help='The name of the cluster on which the run was submitted'
 )
 @common_options
 @pass_cli_context
-def stream_file(ctx, run_config, run_id, task_id, cluster_config, cluster_id):
+def stream_file(ctx, run_config, run_id, cluster_id):
     """Stream the output file of the specified task"""
     inputs = [
         (ctx.credentials_file, "api/schema/credentials-schema.json",
@@ -263,30 +242,30 @@ def stream_file(ctx, run_config, run_id, task_id, cluster_config, cluster_id):
     config = configurations.get_merged_shipyard_config(inputs)
     config["_verbose"] = ctx.verbose
     run_api = RunApi(config)
-    run_api.stream_file(run_id, task_id, cluster_id)
+    run_api.stream_file(run_id, cluster_id)
 
 @run.command('delete')
 @click.option(
-    '--run-config',
-    default='config/run-config.json',
-    help='(full) path to run Configuration JSON file'
+    '--run-id',
+    default=None,
+    help='The name of the run to delete'
 )
 @click.option(
-    '--id',
+    '--cluster-id',
     default=None,
-    help='The (optional) name of the run to delete. This overrides the value in the run-config file'
+    help='The name of the cluster from which to delete the run'
 )
 @common_options
 @pass_cli_context
-def run_delete(ctx, run_config, id):
-    """Delete a cluster with the specified configuration name"""
+def run_delete(ctx, run_id, cluster_id):
+    """Delete a specific run from a specific cluster"""
     inputs = [
         (ctx.credentials_file, "api/schema/credentials-schema.json",
          configurations.to_shipyard_credentials)
     ]
     config = configurations.get_merged_shipyard_config(inputs)
     run_api = RunApi(config)
-    run_api.delete_run(id)
+    run_api.delete_run(run_id, cluster_id)
 
 if __name__ == '__main__':
     cli()

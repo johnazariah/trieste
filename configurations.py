@@ -60,7 +60,7 @@ def _to_shipyard_config(
         convert
     )
 
-def get_merged_shipyard_config(inputs, zero):
+def get_merged_shipyard_config(inputs, zero={}):
     def to_config_opt(tuple):
         return _to_shipyard_config(*tuple)
 
