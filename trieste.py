@@ -177,23 +177,14 @@ def run(ctx):
     pass
 
 @run.command('submit')
-@click.option(
-    '--run-id',
-    default=None,
-    help='The name of the run to submit'
-)
-@click.option(
-    '--cluster-id',
-    default=None,
-    help='The name of the cluster on which to submit the run to'
-)
+@click.option('--run-id', default=None, help='The name of the run to submit')
+@click.option('--cluster-id', default=None, help='The name of the cluster on which to submit the run to')
 @common_options
 @pass_cli_context
 def run_submit(ctx, run_id, cluster_id):
     """Submit a run to the specified cluster"""
     inputs = [
-        (ctx.credentials_file, "api/schema/credentials-schema.json",
-         configurations.to_shipyard_credentials)
+        (ctx.credentials_file, "api/schema/credentials-schema.json", configurations.to_shipyard_credentials)
     ]
     config = configurations.get_merged_shipyard_config(inputs)
     run_api = RunApi(config)
