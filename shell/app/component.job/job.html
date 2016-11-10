@@ -1,0 +1,53 @@
+<section class="content-header">
+	<h1>Job</h1>
+</section>
+<div class="col-sm-4 col-md-4">
+	<div class="box-body table-responsive">
+		<table class="table no-margin">
+			<thead>
+				<tr>
+					<th>#</th>
+					<th>Id</th>
+					<th>State</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr *ngFor="let item of data; let i = index" (click)="foo(item)">
+					<!--<td><a href="#" (click)="foo()"></a>{{i}}</td>-->
+					<td>{{i}}</td>
+					<td>{{item.id}}</td>
+					<td>{{item.state}}</td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+</div>
+<div class="col-sm-8 col-md-8">
+	Graph goes here!
+	<div *ngIf="selectedJob">
+		<p> Your selected job is {{selectedJob.id}}</p>
+		<table>
+			<tr>
+				<td width="50px">
+				</td>
+				<td width="1200px">
+					<div style="height: 300px;">
+						<div id="graph-flot-realtime" style="height: 300px; padding: 0px;"></div>
+					</div>
+				</td>
+			</tr>
+		</table>
+
+		<table>
+			<tr>
+				<td width="50px">
+				</td>
+				<td width="1200px">
+					<div style="height: 300px;">
+						<div id="graph-flot-realtime-minibatch" style="height: 300px; padding: 0px;"></div>
+					</div>
+				</td>
+			</tr>
+		</table>
+	</div>
+</div>
