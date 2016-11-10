@@ -104,7 +104,7 @@ def cluster(ctx):
     default=None,
     help='The name of the cluster to create'
 )
-@click.option('--vm-size', 
+@click.option('--vm-size',
     type=click.Choice([
     'A1', 'A2', 'A3', 'A4', 'A5', 'A6', 'A7', 'A8', 'A9', 'A10', 'A11',
     'D1', 'D2', 'D3', 'D4', 'D11', 'D12', 'D13', 'D14',
@@ -112,7 +112,8 @@ def cluster(ctx):
     'F1', 'F2', 'F4', 'F8', 'F16',
     'G1', 'G2', 'G3', 'G4', 'G5',
     'H8', 'H16', 'H8M', 'H16M', 'H16R', 'H16MR',
-    'NV6', 'NV12', 'NV24', 'NC6', 'NC12', 'NC24']),
+    'NV6', 'NV12', 'NV24',
+    'NC6', 'NC12', 'NC24']),
     help='The size of the Azure VM to provision the cluster with')
 @click.option(
     '--vm-count',
@@ -129,6 +130,8 @@ def cluster_create(ctx, cluster_id, vm_size, vm_count):
     ]
     config = configurations.get_merged_shipyard_config(inputs)
     cluster_api = ClusterApi(config)
+
+    vm_size = "STANDARD_{}".format(vm_size)
     cluster_api.create_cluster(cluster_id, vm_size, vm_count)
 
 @cluster.command('list')
@@ -194,7 +197,11 @@ def run_submit(ctx, run_id, cluster_id):
     ]
     config = configurations.get_merged_shipyard_config(inputs)
     run_api = RunApi(config)
-    run_api.submit_run(run_id, cluster_id)
+
+    cntk_file = "/cntk/Examples/Image/Classification/ConvNet/ConvNet_MNIST.cntk"
+    root_dir = "."
+    data_dir = "/cntk/Examples/Image/DataSets/MNIST"
+    run_api.submit_run(run_id, cluster_id, cntk_file, root_dir, data_dir)
 
 
 @run.command('list')
@@ -214,7 +221,7 @@ def run_list(ctx, cluster_id):
     config = configurations.get_merged_shipyard_config(inputs)
     run_api = RunApi(config)
 
-    runs = run_api.list_runs(cluster_id)
+    runs = run_api.list_runs_by_cluster(cluster_id)
     for j in runs:
         print(j.id)
 
@@ -232,7 +239,7 @@ def run_list(ctx, cluster_id):
 )
 @common_options
 @pass_cli_context
-def stream_file(ctx, run_config, run_id, cluster_id):
+def stream_file(ctx, run_id, cluster_id):
     """Stream the output file of the specified task"""
     inputs = [
         (ctx.credentials_file, "api/schema/credentials-schema.json",
@@ -240,7 +247,6 @@ def stream_file(ctx, run_config, run_id, cluster_id):
     ]
 
     config = configurations.get_merged_shipyard_config(inputs)
-    config["_verbose"] = ctx.verbose
     run_api = RunApi(config)
     run_api.stream_file(run_id, cluster_id)
 

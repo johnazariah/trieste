@@ -35,7 +35,89 @@ import sys
 sys.path.append('batch_shipyard')
 import batch_shipyard.convoy.fleet as convoy_fleet  # noqa
 
+def is_gpu_sku(vm_size):
+    return (vm_size.upper().startswith('NC') or vm_size.upper().startswith('NV'))
+
+def get_task_config(is_gpu_sku, is_multi_instance = False):
+    task_config = {
+        (True, True): ("/cntk/run_convnet_mnist_gpu.sh $AZ_BATCH_NODE_SHARED_DIR/gfs", "alfpark/cntk:1.7.2-gpu-openmpi-refdata"),
+        (True, False): ("/cntk/run_convnet_mnist_gpu.sh .", "alfpark/cntk:1.7.2-gpu-openmpi-refdata"),
+        (False, True): ("mpirun --allow-run-as-root --mca btl_tcp_if_exclude docker0 --host $AZ_BATCH_HOST_LIST /cntk/build-mkl/cpu/release/bin/cntk configFile=/cntk/Examples/Image/Classification/ConvNet/ConvNet_MNIST_Parallel.cntk rootDir=. dataDir=/cntk/Examples/Image/DataSets/MNIST outputDir=$AZ_BATCH_NODE_SHARED_DIR/gfs parallelTrain=true", "alfpark/cntk:1.7.2-cpu-openmpi-refdata"),
+        (False, False): ("/bin/bash -c \"/cntk/build-mkl/cpu/release/bin/cntk configFile=/cntk/Examples/Image/Classification/ConvNet/ConvNet_MNIST.cntk rootDir=. dataDir=/cntk/Examples/Image/DataSets/MNIST\"", "alfpark/cntk:1.7.2-cpu-openmpi-refdata")
+    }
+    return task_config[(is_gpu_sku, is_multi_instance)]
+
+def get_docker_image(vm_size):
+    _, docker_image = get_task_config(is_gpu_sku(vm_size))
+    return docker_image
+
+def get_task_command(vm_size):
+    task_command, _ = get_task_config(is_gpu_sku(vm_size))
+    return task_command
+
+def get_pool_config(cluster_id, vm_size, vm_count):
+    driver_url = "<URL for nvidia driver for STANDARD_NC VMs>"
+
+    empty_pool_config = {
+        "id": cluster_id,
+        "vm_size": vm_size.upper(),
+        "vm_count": vm_count,
+        "inter_node_communication_enabled": True,
+        "publisher": "Canonical",
+        "offer": "UbuntuServer",
+        "sku": "16.04.0-LTS",
+        "ssh": {
+            "username": "docker"
+        },
+        "reboot_on_start_task_failed": False,
+        "block_until_all_global_resources_loaded": True
+    }
+
+    if is_gpu_sku(vm_size):
+        empty_pool_config["gpu"] = {
+            "nvidia_driver": {
+                "source": driver_url
+            }
+        }
+    return empty_pool_config
+
+def get_job_config(cluster_id, is_multi_instance, tasks):
+    empty_job_config = {
+        "id": cluster_id,
+        "tasks": tasks
+    }
+
+    if is_multi_instance:
+        empty_job_config["multi_instance_auto_complete"] = True
+
+    return empty_job_config
+
+
 class ShipyardApi:
+    def _include_general_configuration(self):
+        self.config["batch_shipyard"] = {
+            "storage_account_settings": "__storage_account_name__",
+            "storage_entity_prefix": "shipyard"
+        }
+        self.config["global_resources"] = {}
+        self.config["_auto_confirm"] = False
+        self.config["_verbose"] = True
+
+    def _include_pool_configuration(self, cluster_id, vm_size, vm_count):
+        self.config["pool_specification"] = get_pool_config(cluster_id, vm_size, vm_count)
+        self.config["global_resources"]["docker_images"] = [ get_docker_image(vm_size) ]
+
+    def _include_docker_volume_configuration(self, is_multi_instance):
+        if is_multi_instance:
+            self.config["global_resources"]["docker_volumes"] = {
+                "shared_data_volumes": {
+                    "glustervol": {
+                        "volume_driver": "glusterfs",
+                        "container_path": "$AZ_BATCH_NODE_SHARED_DIR/gfs"
+                    }
+                }
+            }
+
     def __init__(self, config):
         def set_batch_client(config_batch_credentials):
             batch_credentials = batch_auth.SharedKeyCredentials(
@@ -59,33 +141,20 @@ class ShipyardApi:
             self.table_client = azure_storage_table.TableService(**parameters)
 
         self.config = config
-        self.config["batch_shipyard"] = {
-            "storage_account_settings": "__storage_account_name__",
-            "storage_entity_prefix": "shipyard"
-        }
-        self.config["global_resources"] = {
-            "docker_images": [
-                "alfpark/cntk:1.7.2-cpu-openmpi-refdata"
-            ]
-        }
-        self.config["docker_volumes"] = {
-            "shared_data_volumes": {
-                "glustervol": {
-                    "volume_driver": "glusterfs",
-                    "container_path": "$AZ_BATCH_NODE_SHARED_DIR/gfs"
-                }
-            }
-        }
-        self.config["_auto_confirm"] = False
-        self.config["_verbose"] = True
-
+        self._include_general_configuration()
         set_batch_client(config['credentials']['batch'])
         set_storage_clients(config['credentials']['storage']['__storage_account_name__'])
 
-    def call_shipyard_method(self, f):
+    def add_shipyard_job(self, job_name, is_multi_instance, tasks = []):
+        job_config = get_job_config(job_name, is_multi_instance, tasks)
+        self.config["job_specifications"] = [ job_config ]
         convoy_fleet.populate_global_settings(self.config, False)
         convoy_fleet.adjust_general_settings(self.config)
-        f()
+        convoy_fleet.action_jobs_add(
+            self.batch_client,
+            self.blob_client,
+            self.config,
+            (not tasks))
 
 class ClusterApi(ShipyardApi):
     def __init__(self, shipyard_config):
@@ -93,21 +162,6 @@ class ClusterApi(ShipyardApi):
 
     def create_cluster(self, cluster_id, vm_size, vm_count):
         def create_pool():
-            pool_specification = {
-                "id": cluster_id,
-                "vm_size": "STANDARD_{}".format(vm_size.upper()),
-                "vm_count": vm_count,
-                "inter_node_communication_enabled": True,
-                "publisher": "Canonical",
-                "offer": "UbuntuServer",
-                "sku": "16.04.0-LTS",
-                "ssh": {
-                    "username": "docker"
-                },
-                "reboot_on_start_task_failed": False,
-                "block_until_all_global_resources_loaded": True
-            }
-            self.config["pool_specification"] = pool_specification
             convoy_fleet.populate_global_settings(self.config, True)
             convoy_fleet.adjust_general_settings(self.config)
             convoy_fleet.action_pool_add(
@@ -117,24 +171,11 @@ class ClusterApi(ShipyardApi):
                 self.table_client,
                 self.config)
 
-        def create_auto_job():
-            job_specification = {
-                "id": cluster_id,
-                "tasks": []
-            }
-            if (vm_count > 1):
-                job_specification["multi_instance_auto_complete"] = False # review True
-            
-            self.config["job_specifications"] = [ job_specification ]
-            self.call_shipyard_method(lambda:
-                convoy_fleet.action_runs_add(
-                    self.batch_client,
-                    self.blob_client,
-                    self.config,
-                    True))
-        
+        is_multi_instance = (vm_count > 1)
+        self._include_pool_configuration(cluster_id, vm_size, vm_count)
+        self._include_docker_volume_configuration(is_multi_instance)
         create_pool()
-        create_auto_job()
+        self.add_shipyard_job(cluster_id, is_multi_instance)
 
     def list_clusters(self):
         return self.batch_client.pool.list()
@@ -146,41 +187,49 @@ class RunApi(ShipyardApi):
     def __init__(self, shipyard_config):
         super(RunApi, self).__init__(shipyard_config)
 
-    def submit_run(self, run_id, cluster_id, recreate):
-        def build_run_configuration():
-            batch_job = self.batch_client.
-            self.config["job_specifications"] = {
+    def submit_run(self, run_id, cluster_id, cntk_file, root_dir, data_dir):
+        def get_run_task_config(is_gpu_sku, is_multi_instance):
+            (docker_image, command) = get_task_config(is_gpu_sku, is_multi_instance)
+            run_task_config = {
                 "id": run_id,
-                "tasks": [
-                    {
-                        "image": "alfpark/cntk:1.7.2-cpu-openmpi",
-                        "remove_container_after_exit": True,
-                        "command": cntk_shell_cmd
-                    }
-                ]
+                "image": docker_image,
+                "remove_container_after_exit": True,
+                "command": command
             }
-            self.config["pool_specification"]["id"] = cluster_id
-        self.call_shipyard_method(lambda:
-            convoy_fleet.action_jobs_add(
-                self.batch_client,
-                self.blob_client,
-                self.config,
-                False))
+            if is_multi_instance:
+                run_task_config["shared_data_volumes"] = [ "glustervol" ]
+                run_task_config["multi_instance"] = {
+                    "num_instances": "pool_specification_vm_count",
+                    "coordination_command": None
+                }
+            if is_gpu_sku:
+                run_task_config["gpu"] = True
+
+            return run_task_config
+
+        _pool = self.batch_client.pool.get(cluster_id)
+        vm_count = _pool.current_dedicated
+        vm_size = _pool.vm_size
+        is_multi_instance = (vm_count > 1)
+        run_task = get_run_task_config(is_gpu_sku(vm_size), is_multi_instance)
+        self._include_pool_configuration(cluster_id, vm_size, vm_count)
+        self.add_shipyard_job(cluster_id, is_multi_instance, [ run_task ])
 
     def list_runs_by_cluster(self, cluster_id):
-        return self.batch_client.task.list()
-
-    def list_runs_by_cluster(self, cluster_id):
-        return self.batch_client.task.list()
+        return self.batch_client.task.list(cluster_id)
 
     def stream_file(self, run_id, cluster_id):
-        self.call_shipyard_method(lambda:
-            convoy_fleet.action_data_stream(
-                self.batch_client,
-                self.config,
-                "{},{},stderr.txt".format(cluster_id, run_id),
-                True))
+        _pool = self.batch_client.pool.get(cluster_id)
+        vm_count = _pool.current_dedicated
+        vm_size = _pool.vm_size
+        self._include_pool_configuration(cluster_id, vm_size, vm_count)
+        convoy_fleet.populate_global_settings(self.config, False)
+        convoy_fleet.adjust_general_settings(self.config)
+        convoy_fleet.action_data_stream(
+            self.batch_client,
+            self.config,
+            "{},{},stderr.txt".format(cluster_id, run_id),
+            True)
 
-    def delete_run(self, run_id):
-        self.batch_client.task.delete(id or self.config["run_specifications"]["id"])
-        pass
+    def delete_run(self, run_id, cluster_id):
+        self.batch_client.task.delete(cluster_id, task_id=run_id)
