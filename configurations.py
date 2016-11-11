@@ -60,75 +60,16 @@ def _to_shipyard_config(
         convert
     )
 
-def get_merged_shipyard_config(inputs):
+def get_merged_shipyard_config(inputs, zero={}):
     def to_config_opt(tuple):
         return _to_shipyard_config(*tuple)
 
     def plus(left, right):
         return Just(_merge_dict).amap(left).amap(right)
 
-    zero = Just({})
-    result_opt = reduce(plus, map(to_config_opt, inputs), zero)
+    result_opt = reduce(plus, map(to_config_opt, inputs), Just(zero))
 
     return result_opt.getValue()
-
-def to_shipyard_pool_config(trieste_cluster_config):
-    return {
-        "pool_specification": {
-            "id": trieste_cluster_config["id"],
-            "vm_size": trieste_cluster_config["vm_size"],
-            "vm_count": trieste_cluster_config["vm_count"],
-            "inter_node_communication_enabled": True,
-            "publisher": "Canonical",
-            "offer": "UbuntuServer",
-            "sku": "16.04.0-LTS",
-            "ssh": {
-                "username": "docker"
-            },
-            "reboot_on_start_task_failed": False,
-            "block_until_all_global_resources_loaded": True
-        }
-    }
-
-
-def to_shipyard_job_config(trieste_job_config):
-    config_file_arg = " configFile={}" \
-        .format(trieste_job_config["config_file"])
-    root_dir_arg = " RootDir={}" \
-        .format(trieste_job_config["input_directory"])
-    cntk_cmd = "/cntk/build/cpu/release/bin/cntk{}{}" \
-        .format(config_file_arg, root_dir_arg)
-
-    cntk_shell_cmd = '/bin/bash -c "{}"'.format(cntk_cmd)
-
-    return {
-        "job_specifications": [
-            {
-                "id": trieste_job_config["id"],
-                "tasks": [
-                    {
-                        "image": "alfpark/cntk:1.7.2-cpu-openmpi",
-                        "remove_container_after_exit": True,
-                        "command": cntk_shell_cmd
-                    }
-                ]
-            }
-        ]
-    }
-
-
-def to_shipyard_global_config(trieste_config):
-    return {
-        "batch_shipyard": {
-            "storage_account_settings": "__storage_account_name__",
-            "storage_entity_prefix": "shipyard"
-        },
-        "global_resources": {
-            "docker_images": [
-                "alfpark/cntk:1.7.2-cpu-openmpi"
-            ]
-        }
-    }
 
 def to_shipyard_credentials(trieste_credentials_config):
     return {
