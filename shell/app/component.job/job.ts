@@ -8,6 +8,7 @@ import { Task } from "../../app/models/task";
 import { RxListProxy } from "../../app/services/core/rx-list-proxy";
 
 import monitorProxy from "../client-proxy/monitor-client";
+import launchProxy from "../client-proxy/launch-client";
 
 declare var $:any;
 
@@ -22,7 +23,10 @@ export class JobComponent {
 
   public selectedCluster: any;
   public selectedRun: any;
-  
+
+  public newRunId: string;
+  public newRUnCluster: any;
+
   public chartData: any;
 
   constructor(private poolService: PoolService, private taskService: TaskService) {
@@ -34,7 +38,7 @@ export class JobComponent {
 
   public select_cluster(item) {
     this.selectedCluster = item.id;
-    this.runs = this.taskService.list(this.selectedCluster);  
+    this.runs = this.taskService.list(this.selectedCluster);
     this.runs.fetchNext();
   }
 
@@ -43,12 +47,24 @@ export class JobComponent {
     this.showChart(this.selectedCluster, this.selectedRun);
   }
 
+  public submit_run() {
+    let clusterId = $("#myDropdown").val();
+    let runId = $("#runId").val();
+    console.log(`Submit Run with cluster (${clusterId}), run (${runId})`);
+    launchProxy.submit_run(clusterId, runId);
+  }
+
+  public onChange(val){
+    alert("yes");
+    console.log("here i am" + val);
+  }
+
   public showChart(clusterId, runId) {
     console.log(`I would show the graph for ${clusterId}/${runId} here`);
-    
+
     monitorProxy.load(this.selectedCluster, this.selectedRun, this.drawChart);
   }
-  
+
   private drawChart(myLogParseData) {
     var totEpochs = 300
 

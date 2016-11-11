@@ -1,3 +1,39 @@
+<button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#myModal">
+  Submit Run...
+</button>
+
+<!-- Modal -->
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+	<div class="modal-dialog" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+				<h4 class="modal-title" id="myModalLabel">Submit Run</h4>
+			</div>
+			<div class="modal-body">
+				<div class="box box-primary">
+					<div class="box-body" style="display: block;">
+						<div class="form-group">
+							<label class="col-sm-2 control-label" for="runId">Run</label>
+							<div class="col-sm-10">
+								<input class="form-control" id="runId" type="text" placeholder="Run Identifier" value="{{newRunId}}">
+							</div>
+							<label class="col-sm-2 control-label" for="clusterId">Cluster</label>
+							<div class="col-sm-10">
+								<select id="myDropdown" (ngModelChange)="onChange($event)"><option *ngFor="let item of clusters.items | async">{{item.id}}</option></select>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+				<button type="button" class="btn btn-primary" (click)="submit_run()">Save changes</button>
+			</div>
+		</div>
+	</div>
+</div>
+
 <div id="clusters" class="col-sm-2 col-md-2">
 	<div class="box-body table-responsive">
 		<h4>Clusters</h4>
