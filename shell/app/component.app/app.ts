@@ -4,9 +4,9 @@ import batchClient from '../api/batch/batch-client'
 import launchProxy from "../client-proxy/launch-client";
 
 batchClient.setOptions({
-    account: "azuregenomics",
-    key: "IATpKFKP+AAF7/nDM9ZjXx7Hc9NqXLzj5mCqKV9/2QFXZd/Etz7SLhE6YcUclf32bDvvHQHR66UAk5QfO9VPNA==",
-    url: "https://azuregenomics.southeastasia.batch.azure.com"
+    account: "johnaz",
+    key: "o1nVKqJGU7m5SepCpmpLfGclxGkEDDMiCw0kr3pmw4l+HSYwiWA04wxusB/bmIEs5T228O9nwmHP/ThFvetNAg==",
+    url: "https://johnaz.southcentralus.batch.azure.com"
 });
 
 @Component({

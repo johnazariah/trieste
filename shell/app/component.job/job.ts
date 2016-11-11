@@ -1,43 +1,65 @@
 import { Component } from '@angular/core';
+import { PoolService } from "../../app/services/pool-service";
+import { Pool } from "../../app/models/pool";
 import { JobService } from "../../app/services/job-service";
 import { Job } from "../../app/models/job";
 import { TaskService } from "../../app/services/task-service";
 import { Task } from "../../app/models/task";
 import { RxListProxy } from "../../app/services/core/rx-list-proxy";
 
+import monitorProxy from "../client-proxy/monitor-client";
+
 declare var $:any;
 
 @Component({
   selector: 'job',
-  templateUrl: './app/component.job/job.html'
+  templateUrl: './app/component.job/template.html'
 })
 
 export class JobComponent {
-  public data: any;
-  public selectedJob: any;
+  public clusters: any;
+  public runs: any;
+
+  public selectedCluster: any;
+  public selectedRun: any;
+  
   public chartData: any;
-  constructor(private service: JobService) {
-    // this.data = service.list();
-    // this.data.fetchNext();
 
-    this.data = [{
-      id: '1',
-      state: 'active'
-    }];
+  constructor(private poolService: PoolService, private taskService: TaskService) {
+    this.clusters = poolService.list();
+    this.clusters.fetchNext();
 
-    setInterval(this.doSomethingPeridoically, 3000);
+    //setInterval(this.doSomethingPeridoically, 3000);
   }
 
-  public foo(item) {
-    console.log("wtf???" + JSON.stringify(item));
-    this.selectedJob = item;
-    this.chartData = this.getChartData();
-    this.drawChart(this.chartData);
+  public select_cluster(item) {
+    this.selectedCluster = item.id;
+    this.runs = this.taskService.list(this.selectedCluster);  
+    this.runs.fetchNext();
   }
 
-  private doSomethingPeridoically() {
-    console.log("Hello John");
+  public select_run(item) {
+    this.selectedRun = item.id;
+
+    this.showChart(this.selectedCluster, this.selectedRun);
   }
+
+  public showChart(clusterId, runId) {
+    console.log(`I would show the graph for ${clusterId}/${runId} here`);
+  }
+
+  // public foo(item) {
+  //   console.log("wtf???" + JSON.stringify(item));
+  //   this.selectedJob = item;
+  //   monitorProxy.monitor(item.id, "dockertask-000")
+  //   // this.chartData = this.getChartData();
+  //   // this.drawChart(this.chartData);
+  // }
+
+  // private doSomethingPeridoically() {
+  //   console.log("Hello John");
+  // }
+
   private getChartData(): any {
     var myLogParseData = {
       "gFMaxErr": 0.19655062,

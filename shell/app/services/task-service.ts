@@ -1,6 +1,8 @@
-import { DataCache, RxEntityProxy, RxListProxy } from "./core";
+import { DataCache } from "./core/data-cache";
+import { RxEntityProxy } from "./core/rx-entity-proxy";
+import { RxListProxy } from "./core/rx-list-proxy";
 import { Injectable } from "@angular/core";
-import { Task } from "../../app/models";
+import { Task } from "../../app/models/task";
 
 import BatchClient from "../api/batch/batch-client";
 import ServiceBase from "./service-base";

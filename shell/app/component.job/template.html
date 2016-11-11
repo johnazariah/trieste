@@ -1,0 +1,72 @@
+<div id="clusters" class="col-sm-2 col-md-2">
+	<div class="box-body table-responsive">
+		<h4>Clusters</h4>
+		<table class="table no-margin">
+			<thead>
+				<tr>
+					<th>#</th>
+					<th>Id</th>
+					<th>State</th>
+				</tr>
+			</thead>
+			<tbody *ngFor="let item of clusters.items | async; let i = index" (click)="select_cluster(item)">
+				<tr>
+					<td>{{i}}</td>
+					<td>{{item.id}}</td>
+					<td>{{item.state}}</td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+</div>
+<div id="runs" class="col-sm-2 col-md-2">
+	<div *ngIf="selectedCluster">
+		<h4>Runs</h4>
+		<div class="box-body table-responsive">
+			<table class="table no-margin">
+				<thead>
+					<tr>
+						<th>#</th>
+						<th>Id</th>
+						<th>State</th>
+					</tr>
+				</thead>
+				<tbody *ngFor="let item of runs.items | async; let i = index" (click)="select_run(item)">
+					<tr>
+						<td>{{i}}</td>
+						<td>{{item.id}}</td>
+						<td>{{item.state}}</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+	</div>
+</div>
+<div id="graph" class="col-sm-8 col-md-8">
+	<div *ngIf="selectedRun">
+		<p> Your selected run is {{selectedCluster}}/{{selectedRun}}</p>
+		<table>
+			<tr>
+				<td width="50px">
+				</td>
+				<td width="1200px">
+					<div style="height: 300px;">
+						<div id="graph-flot-realtime" style="height: 300px; padding: 0px;"></div>
+					</div>
+				</td>
+			</tr>
+		</table>
+
+		<table>
+			<tr>
+				<td width="50px">
+				</td>
+				<td width="1200px">
+					<div style="height: 300px;">
+						<div id="graph-flot-realtime-minibatch" style="height: 300px; padding: 0px;"></div>
+					</div>
+				</td>
+			</tr>
+		</table>
+	</div>
+</div>

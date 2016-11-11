@@ -1,6 +1,7 @@
 
 import { BrowserWindow, app } from "electron";
-import LaunchProxy from "./server-proxy";
+import LaunchProxy from "./server-proxy/launch-proxy";
+import MonitorProxy from "./server-proxy/monitor-proxy";
 import BatchClientProxy from "../client/api/batch-client-proxy"
 
 // Keep a global reference of the window object, if you don't, the window will
@@ -21,6 +22,7 @@ function createWindow () {
   win.loadURL(`file://${__dirname}/../index.html`)
 
   win.launchProxy = new LaunchProxy();
+  win.monitorProxy = new MonitorProxy();
   win.batchClient = new BatchClientProxy();
 
   // Open the DevTools.
