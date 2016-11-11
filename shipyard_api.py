@@ -32,6 +32,11 @@ import azure.batch.batch_auth as batch_auth
 import azure.batch.batch_service_client as batch_service_client
 import logging
 
+try:
+    import pathlib
+except ImportError:
+    import pathlib2 as pathlib
+
 import sys
 sys.path.append('batch_shipyard')
 import batch_shipyard.convoy.fleet as convoy_fleet  # noqa
@@ -246,14 +251,18 @@ class RunApi(ShipyardApi):
     def list_runs_by_cluster(self, cluster_id):
         return self.batch_client.task.list(cluster_id)
 
-    def stream_file(self, run_id, cluster_id):
-        self.make_shipyard_call(
-            cluster_id,
-            lambda: (convoy_fleet.action_data_stream(
-                self.batch_client,
-                self.config,
-                "{},{},stderr.txt".format(cluster_id, run_id),
-                True)))
+    def get_run_data(self, run_id, cluster_id):
+        file = 'stderr.txt'
+        print("Job : {}; Task : {}".format(cluster_id, run_id))
+        stream = self.batch_client.file.get_from_task(cluster_id, run_id, file)
+        fp = pathlib.Path(cluster_id, run_id, file)
+        fp.parent.mkdir(mode=0o750, parents=True, exist_ok=True)        
+        with fp.open('wb') as f:
+            for fdata in stream:
+                f.write(fdata)
+        
+        logger.debug('file {} retrieved from job={} task={} bytes={}'.format(file, cluster_id, run_id, fp.stat().st_size))
+
 
     def delete_run(self, run_id, cluster_id):
         self.batch_client.task.delete(cluster_id, task_id=run_id)

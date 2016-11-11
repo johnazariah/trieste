@@ -209,7 +209,7 @@ def run_list(ctx, cluster_id):
         print(j.id)
 
 
-@run.command('stream-file')
+@run.command('get-data')
 @click.option(
     '--run-id',
     default=None,
@@ -222,7 +222,7 @@ def run_list(ctx, cluster_id):
 )
 @common_options
 @pass_cli_context
-def stream_file(ctx, run_id, cluster_id):
+def get_run_data(ctx, run_id, cluster_id):
     """Stream the output file of the specified task"""
     inputs = [
         (ctx.credentials_file, "api/schema/credentials-schema.json",
@@ -231,7 +231,7 @@ def stream_file(ctx, run_id, cluster_id):
 
     config = configurations.get_merged_shipyard_config(inputs)
     run_api = RunApi(config)
-    run_api.stream_file(run_id, cluster_id)
+    run_api.get_run_data(run_id, cluster_id)
 
 @run.command('delete')
 @click.option(
