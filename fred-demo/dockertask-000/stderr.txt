@@ -1,0 +1,2 @@
+docker: Error parsing reference: "/bin/bash" is not a valid repository/tag.
+See 'docker run --help'.

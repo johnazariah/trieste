@@ -30,10 +30,13 @@ import azure.storage.table as azure_storage_table
 
 import azure.batch.batch_auth as batch_auth
 import azure.batch.batch_service_client as batch_service_client
+import logging
 
 import sys
 sys.path.append('batch_shipyard')
 import batch_shipyard.convoy.fleet as convoy_fleet  # noqa
+
+logger = logging.getLogger('trieste')
 
 def get_task_config(is_gpu, is_multi_instance = False):
     task_config = {
@@ -53,7 +56,7 @@ def get_task_command(vm_size):
     return task_command
 
 def is_gpu_sku(vm_size):
-    return (vm_size.upper().startswith('NC') or vm_size.upper().startswith('NV'))
+    return (vm_size.upper().startswith('STANDARD_NC') or vm_size.upper().startswith('STANDARD_NV'))
 
 class ShipyardApi:
     def __init__(self, config):
@@ -105,7 +108,13 @@ class ShipyardApi:
                 }
 
         def get_pool_config(cluster_id, vm_size, vm_count):
-            driver_url = "<URL for nvidia driver for STANDARD_NC VMs>"
+            def get_driver_url():
+                if vm_size.upper().startswith('STANDARD_NC'):
+                    return "https://azuregpu.blob.core.windows.net/nc-drivers/NVIDIA-Linux-x86_64-361.69-1009163-01.run"
+                elif vm_size.upper().startswith('STANDARD_NV'):
+                    return "https://azuregpu.blob.core.windows.net/nv-drivers/NVIDIA-Linux-x86_64-361.45.09-grid.run"
+                else:
+                    return None
 
             pool_config = {
                 "id": cluster_id,
@@ -125,7 +134,7 @@ class ShipyardApi:
             if is_gpu_sku(vm_size):
                 pool_config["gpu"] = {
                     "nvidia_driver": {
-                        "source": driver_url
+                        "source": get_driver_url()
                     }
                 }
             return pool_config
@@ -136,6 +145,7 @@ class ShipyardApi:
 
     def add_shipyard_pool(self, pool_name, vm_size, vm_count):
         def create_pool():
+
             convoy_fleet.populate_global_settings(self.config, True)
             convoy_fleet.adjust_general_settings(self.config)
             convoy_fleet.action_pool_add(
@@ -148,16 +158,19 @@ class ShipyardApi:
         self.include_pool_configuration(pool_name, vm_size, vm_count)
         create_pool()
 
-    def add_shipyard_job(self, job_name, pool_size_info = None):
+    def add_shipyard_job(self, job_name, run_id = None, pool_size_info = None):
         def include_job_configuration(job_name, vm_size, vm_count):
             def get_run_task_config(is_gpu_sku, is_multi_instance):
-                (docker_image, command) = get_task_config(is_gpu_sku, is_multi_instance)
+                (command, docker_image) = get_task_config(is_gpu_sku, is_multi_instance)
                 run_task_config = {
-                    "id": run_id,
                     "image": docker_image,
                     "remove_container_after_exit": True,
                     "command": command
                 }
+
+                if run_id:
+                    run_task_config["id"] = run_id
+
                 if is_multi_instance:
                     run_task_config["shared_data_volumes"] = [ "glustervol" ]
                     run_task_config["multi_instance"] = {
@@ -203,7 +216,7 @@ class ShipyardApi:
         return (vm_size, vm_count)
 
     def make_shipyard_call(self, cluster_id, f, pool_size_info = None):
-        (vm_size, vm_count) = pool_size_info if pool_size_info else self.get_existing_pool_size_and_count(job_name)
+        (vm_size, vm_count) = pool_size_info if pool_size_info else self.get_existing_pool_size_and_count(cluster_id)
         self.include_pool_configuration(cluster_id, vm_size, vm_count)
         convoy_fleet.populate_global_settings(self.config, False)
         convoy_fleet.adjust_general_settings(self.config)
@@ -215,7 +228,7 @@ class ClusterApi(ShipyardApi):
 
     def create_cluster(self, cluster_id, vm_size, vm_count):
         self.add_shipyard_pool(cluster_id, vm_size, vm_count)
-        self.add_shipyard_job(cluster_id, (vm_count, vm_size))
+        self.add_shipyard_job(cluster_id, pool_size_info = (vm_size, vm_count))
 
     def list_clusters(self):
         return self.batch_client.pool.list()
@@ -228,14 +241,14 @@ class RunApi(ShipyardApi):
         super(RunApi, self).__init__(shipyard_config)
 
     def submit_run(self, run_id, cluster_id, cntk_file, root_dir, data_dir):
-        self.add_shipyard_job(cluster_id)
+        self.add_shipyard_job(cluster_id, run_id = run_id)
 
     def list_runs_by_cluster(self, cluster_id):
         return self.batch_client.task.list(cluster_id)
 
     def stream_file(self, run_id, cluster_id):
         self.make_shipyard_call(
-            job_name,
+            cluster_id,
             lambda: (convoy_fleet.action_data_stream(
                 self.batch_client,
                 self.config,

@@ -152,11 +152,7 @@ def cluster_list(ctx):
 
 
 @cluster.command('delete')
-@click.option(
-    '--cluster-id',
-    default=None,
-    help='The name of the cluster to delete.'
-)
+@click.option('--cluster-id', default=None, help='The name of the cluster to delete.')
 @common_options
 @pass_cli_context
 def cluster_delete(ctx, cluster_id):
@@ -196,11 +192,7 @@ def run_submit(ctx, run_id, cluster_id):
 
 
 @run.command('list')
-@click.option(
-    '--cluster-id',
-    default=None,
-    help='The name of the cluster'
-)
+@click.option('--cluster-id', default=None, help='The name of the cluster')
 @common_options
 @pass_cli_context
 def run_list(ctx, cluster_id):

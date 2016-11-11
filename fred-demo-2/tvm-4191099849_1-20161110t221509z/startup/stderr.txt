@@ -1,0 +1,13 @@
+debconf: unable to initialize frontend: Dialog
+debconf: (TERM is not set, so the dialog frontend is not usable.)
+debconf: falling back to frontend: Readline
+debconf: unable to initialize frontend: Readline
+debconf: (This frontend requires a controlling tty.)
+debconf: falling back to frontend: Teletype
+dpkg-preconfigure: unable to re-open stdin: 
+gpg: requesting key 2C52609D from hkp server p80.pool.sks-keyservers.net
+gpg: no valid OpenPGP data found.
+gpg: Total number processed: 0
+gpg: keyserver communications error: keyserver unreachable
+gpg: keyserver communications error: public key not found
+gpg: keyserver receive failed: public key not found

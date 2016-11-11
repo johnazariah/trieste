@@ -1,0 +1,650 @@
+CNTK 1.7.2+ (master 213d5e, Oct 22 2016 05:32:23) on localhost at 2016/11/11 00:53:04
+
+/cntk/build-mkl/gpu/release/bin/cntk  configFile=/cntk/Examples/Image/Classification/ConvNet/ConvNet_MNIST.cntk  rootDir=.  dataDir=/cntk/Examples/Image/DataSets/MNIST  outputDir=.
+-------------------------------------------------------------------
+Build info: 
+
+		Built time: Oct 22 2016 05:32:23
+		Last modified date: Sat Oct 22 05:16:20 2016
+		Build type: release
+		Build target: GPU
+		With 1bit-SGD: yes
+		Math lib: mkl
+		CUDA_PATH: /usr/local/cuda
+		CUB_PATH: /usr/local/cub-1.4.1
+		CUDNN_PATH: /usr/local/cudnn
+		Build Branch: master
+		Build SHA1: 213d5ebd8ad907801a71023a53a24df4c2ed3fea
+		Built by  on 26cb43ba6817
+		Build Path: /cntk
+-------------------------------------------------------------------
+-------------------------------------------------------------------
+GPU info:
+
+		Device[0]: cores = 2496; computeCapability = 3.7; type = "Tesla K80"; memory = 11441 MB
+-------------------------------------------------------------------
+
+Configuration After Processing and Variable Resolution:
+
+configparameters: ConvNet_MNIST.cntk:command=trainNetwork:testNetwork
+configparameters: ConvNet_MNIST.cntk:dataDir=/cntk/Examples/Image/DataSets/MNIST
+configparameters: ConvNet_MNIST.cntk:deviceId=auto
+configparameters: ConvNet_MNIST.cntk:modelPath=./Models/ConvNet_MNIST
+configparameters: ConvNet_MNIST.cntk:outputDir=.
+configparameters: ConvNet_MNIST.cntk:precision=float
+configparameters: ConvNet_MNIST.cntk:rootDir=.
+configparameters: ConvNet_MNIST.cntk:testNetwork={
+    action = test
+minibatchSize = 1024    
+    reader = {
+        readerType = "CNTKTextFormatReader"
+        file = "/cntk/Examples/Image/DataSets/MNIST/Test-28x28_cntk_text.txt"
+        input = {
+            features = { dim = 784 ; format = "dense" }
+            labels =   { dim = 10  ; format = "dense" }
+        }
+    }
+}
+
+configparameters: ConvNet_MNIST.cntk:traceLevel=1
+configparameters: ConvNet_MNIST.cntk:trainNetwork={
+    action = "train"
+    BrainScriptNetworkBuilder = {
+imageShape = 28:28:1                        
+labelDim = 10                               
+        featScale = 1/256
+        Scale{f} = x => Constant(f) .* x
+        model = Sequential (
+            Scale {featScale} :
+            ConvolutionalLayer {32, (5:5), pad = true} : ReLU : 
+            MaxPoolingLayer    {(3:3), stride=(2:2)} :
+            ConvolutionalLayer {48, (3:3), pad = false} : ReLU : 
+            MaxPoolingLayer    {(3:3), stride=(2:2)} :
+            ConvolutionalLayer {64, (3:3), pad = false} : ReLU : 
+            DenseLayer         {96} : Dropout : ReLU :  
+            LinearLayer        {labelDim}
+        )
+        features = Input {imageShape}
+        labels = Input {labelDim}
+        ol = model (features)
+        ce   = CrossEntropyWithSoftmax (labels, ol)
+        errs = ClassificationError (labels, ol)
+        featureNodes    = (features)
+        labelNodes      = (labels)
+        criterionNodes  = (ce)
+        evaluationNodes = (errs)
+        outputNodes     = (ol)
+    }
+    SGD = {
+        epochSize = 60000
+        minibatchSize = 64
+        maxEpochs = 40
+        learningRatesPerSample = 0.001*10:0.0005*10:0.0001
+		dropoutRate = 0.5
+        momentumAsTimeConstant = 0*5:1024
+        numMBsToShowResult = 500
+    }
+    reader = {
+        readerType = "CNTKTextFormatReader"
+        file = "/cntk/Examples/Image/DataSets/MNIST/Train-28x28_cntk_text.txt"
+        randomize = true
+        keepDataInMemory = true
+        input = {
+            features = { dim = 784 ; format = "dense" }
+            labels =   { dim = 10  ; format = "dense" }
+        }
+    }    
+}
+
+Commands: trainNetwork testNetwork
+precision = "float"
+
+##############################################################################
+#                                                                            #
+# trainNetwork command (train action)                                        #
+#                                                                            #
+##############################################################################
+
+
+Creating virgin network.
+Node '<placeholder>' (LearnableParameter operation): Initializating Parameter[10 x 0] as glorotUniform later when dimensions are fully known.
+Node '<placeholder>' (LearnableParameter operation): Initializating Parameter[96 x 0] as glorotUniform later when dimensions are fully known.
+Node '<placeholder>' (LearnableParameter operation): Initializating Parameter[3 x 3 x 0 x 64] as glorotUniform later when dimensions are fully known.
+Node '<placeholder>' (LearnableParameter operation): Initializating Parameter[3 x 3 x 0 x 48] as glorotUniform later when dimensions are fully known.
+Node '<placeholder>' (LearnableParameter operation): Initializating Parameter[5 x 5 x 0 x 32] as glorotUniform later when dimensions are fully known.
+
+Post-processing network...
+
+3 roots:
+	ce = CrossEntropyWithSoftmax()
+	errs = ClassificationError()
+	ol = Plus()
+
+Validating network. 33 nodes to process in pass 1.
+
+Validating --> labels = InputValue() :  -> [10 x *]
+Validating --> model.arrayOfFunctions[12].W = LearnableParameter() :  -> [10 x 0]
+Validating --> model.arrayOfFunctions[9].arrayOfFunctions[0].W = LearnableParameter() :  -> [96 x 0]
+Validating --> model.arrayOfFunctions[7].W = LearnableParameter() :  -> [3 x 3 x 0 x 64]
+Validating --> model.arrayOfFunctions[4].W = LearnableParameter() :  -> [3 x 3 x 0 x 48]
+Validating --> model.arrayOfFunctions[1].W = LearnableParameter() :  -> [5 x 5 x 0 x 32]
+Validating --> ol.x._._.x._.x.x._.x.x._.x.ElementTimesArgs[0] = LearnableParameter() :  -> [1 x 1]
+Validating --> features = InputValue() :  -> [28 x 28 x 1 x *]
+Validating --> ol.x._._.x._.x.x._.x.x._.x = ElementTimes (ol.x._._.x._.x.x._.x.x._.x.ElementTimesArgs[0], features) : [1 x 1], [28 x 28 x 1 x *] -> [28 x 28 x 1 x *]
+Node 'model.arrayOfFunctions[1].W' (LearnableParameter operation) operation: Tensor shape was inferred as [5 x 5 x 1 x 32].
+Node 'model.arrayOfFunctions[1].W' (LearnableParameter operation): Initializing Parameter[5 x 5 x 1 x 32] <- glorotUniform(seed=5, init dims=[800 x 25], range=0.085280*1.000000, onCPU=true.
+)Validating --> ol.x._._.x._.x.x._.x.x._.c = Convolution (model.arrayOfFunctions[1].W, ol.x._._.x._.x.x._.x.x._.x) : [5 x 5 x 1 x 32], [28 x 28 x 1 x *] -> [28 x 28 x 32 x *]
+Validating --> model.arrayOfFunctions[1].b = LearnableParameter() :  -> [1 x 1 x 32]
+Validating --> ol.x._._.x._.x.x._.x.x._.res.x = Plus (ol.x._._.x._.x.x._.x.x._.c, model.arrayOfFunctions[1].b) : [28 x 28 x 32 x *], [1 x 1 x 32] -> [28 x 28 x 32 x *]
+Validating --> ol.x._._.x._.x.x._.x.x = RectifiedLinear (ol.x._._.x._.x.x._.x.x._.res.x) : [28 x 28 x 32 x *] -> [28 x 28 x 32 x *]
+Validating --> ol.x._._.x._.x.x._.x = Pooling (ol.x._._.x._.x.x._.x.x) : [28 x 28 x 32 x *] -> [13 x 13 x 32 x *]
+Node 'model.arrayOfFunctions[4].W' (LearnableParameter operation) operation: Tensor shape was inferred as [3 x 3 x 32 x 48].
+Node 'model.arrayOfFunctions[4].W' (LearnableParameter operation): Initializing Parameter[3 x 3 x 32 x 48] <- glorotUniform(seed=4, init dims=[432 x 288], range=0.091287*1.000000, onCPU=true.
+)Validating --> ol.x._._.x._.x.x._.c = Convolution (model.arrayOfFunctions[4].W, ol.x._._.x._.x.x._.x) : [3 x 3 x 32 x 48], [13 x 13 x 32 x *] -> [11 x 11 x 48 x *]
+Validating --> model.arrayOfFunctions[4].b = LearnableParameter() :  -> [1 x 1 x 48]
+Validating --> ol.x._._.x._.x.x._.res.x = Plus (ol.x._._.x._.x.x._.c, model.arrayOfFunctions[4].b) : [11 x 11 x 48 x *], [1 x 1 x 48] -> [11 x 11 x 48 x *]
+Validating --> ol.x._._.x._.x.x = RectifiedLinear (ol.x._._.x._.x.x._.res.x) : [11 x 11 x 48 x *] -> [11 x 11 x 48 x *]
+Validating --> ol.x._._.x._.x = Pooling (ol.x._._.x._.x.x) : [11 x 11 x 48 x *] -> [5 x 5 x 48 x *]
+Node 'model.arrayOfFunctions[7].W' (LearnableParameter operation) operation: Tensor shape was inferred as [3 x 3 x 48 x 64].
+Node 'model.arrayOfFunctions[7].W' (LearnableParameter operation): Initializing Parameter[3 x 3 x 48 x 64] <- glorotUniform(seed=3, init dims=[576 x 432], range=0.077152*1.000000, onCPU=true.
+)Validating --> ol.x._._.x._.c = Convolution (model.arrayOfFunctions[7].W, ol.x._._.x._.x) : [3 x 3 x 48 x 64], [5 x 5 x 48 x *] -> [3 x 3 x 64 x *]
+Validating --> model.arrayOfFunctions[7].b = LearnableParameter() :  -> [1 x 1 x 64]
+Validating --> ol.x._._.x._.res.x = Plus (ol.x._._.x._.c, model.arrayOfFunctions[7].b) : [3 x 3 x 64 x *], [1 x 1 x 64] -> [3 x 3 x 64 x *]
+Validating --> _ol.x._._.x = RectifiedLinear (ol.x._._.x._.res.x) : [3 x 3 x 64 x *] -> [3 x 3 x 64 x *]
+Node 'model.arrayOfFunctions[9].arrayOfFunctions[0].W' (LearnableParameter operation) operation: Tensor shape was inferred as [96 x 3 x 3 x 64].
+Node 'model.arrayOfFunctions[9].arrayOfFunctions[0].W' (LearnableParameter operation): Initializing Parameter[96 x 3 x 3 x 64] <- glorotUniform(seed=2, init dims=[96 x 576], range=0.094491*1.000000, onCPU=true.
+)Validating --> ol.x._._.x.PlusArgs[0] = Times (model.arrayOfFunctions[9].arrayOfFunctions[0].W, _ol.x._._.x) : [96 x 3 x 3 x 64], [3 x 3 x 64 x *] -> [96 x *]
+Validating --> model.arrayOfFunctions[9].arrayOfFunctions[0].b = LearnableParameter() :  -> [96]
+Validating --> ol.x._._.x = Plus (ol.x._._.x.PlusArgs[0], model.arrayOfFunctions[9].arrayOfFunctions[0].b) : [96 x *], [96] -> [96 x *]
+Validating --> ol.x._ = Dropout (ol.x._._.x) : [96 x *] -> [96 x *]
+Validating --> ol.x = RectifiedLinear (ol.x._) : [96 x *] -> [96 x *]
+Node 'model.arrayOfFunctions[12].W' (LearnableParameter operation) operation: Tensor shape was inferred as [10 x 96].
+Node 'model.arrayOfFunctions[12].W' (LearnableParameter operation): Initializing Parameter[10 x 96] <- glorotUniform(seed=1, init dims=[10 x 96], range=0.237915*1.000000, onCPU=true.
+)Validating --> ol.PlusArgs[0] = Times (model.arrayOfFunctions[12].W, ol.x) : [10 x 96], [96 x *] -> [10 x *]
+Validating --> model.arrayOfFunctions[12].b = LearnableParameter() :  -> [10]
+Validating --> ol = Plus (ol.PlusArgs[0], model.arrayOfFunctions[12].b) : [10 x *], [10] -> [10 x *]
+Validating --> ce = CrossEntropyWithSoftmax (labels, ol) : [10 x *], [10 x *] -> [1]
+Validating --> errs = ClassificationError (labels, ol) : [10 x *], [10 x *] -> [1]
+
+Validating network. 20 nodes to process in pass 2.
+
+
+Validating network, final pass.
+
+ol.x._._.x._.x.x._.x.x._.c: using cuDNN convolution engine for geometry: Input: 28 x 28 x 1, Output: 28 x 28 x 32, Kernel: 5 x 5 x 1, Map: 32, Stride: 1 x 1 x 1, Sharing: (1, 1, 1), AutoPad: (1, 1, 0), LowerPad: 0 x 0 x 0, UpperPad: 0 x 0 x 0.
+ol.x._._.x._.x.x._.x: using cuDNN convolution engine for geometry: Input: 28 x 28 x 32, Output: 13 x 13 x 32, Kernel: 3 x 3 x 1, Map: 1, Stride: 2 x 2 x 1, Sharing: (1, 1, 1), AutoPad: (0, 0, 0), LowerPad: 0 x 0 x 0, UpperPad: 0 x 0 x 0.
+ol.x._._.x._.x.x._.c: using cuDNN convolution engine for geometry: Input: 13 x 13 x 32, Output: 11 x 11 x 48, Kernel: 3 x 3 x 32, Map: 48, Stride: 1 x 1 x 32, Sharing: (1, 1, 1), AutoPad: (0, 0, 0), LowerPad: 0 x 0 x 0, UpperPad: 0 x 0 x 0.
+ol.x._._.x._.x: using cuDNN convolution engine for geometry: Input: 11 x 11 x 48, Output: 5 x 5 x 48, Kernel: 3 x 3 x 1, Map: 1, Stride: 2 x 2 x 1, Sharing: (1, 1, 1), AutoPad: (0, 0, 0), LowerPad: 0 x 0 x 0, UpperPad: 0 x 0 x 0.
+ol.x._._.x._.c: using cuDNN convolution engine for geometry: Input: 5 x 5 x 48, Output: 3 x 3 x 64, Kernel: 3 x 3 x 48, Map: 64, Stride: 1 x 1 x 48, Sharing: (1, 1, 1), AutoPad: (0, 0, 0), LowerPad: 0 x 0 x 0, UpperPad: 0 x 0 x 0.
+
+
+
+Post-processing network complete.
+
+
+Model has 33 nodes. Using GPU 0.
+
+Training criterion:   ce = CrossEntropyWithSoftmax
+Evaluation criterion: errs = ClassificationError
+
+
+Allocating matrices for forward and/or backward propagation.
+
+Memory Sharing: Out of 61 matrices, 36 are shared as 16, and 25 are not shared.
+
+	{ model.arrayOfFunctions[1].W : [5 x 5 x 1 x 32] (gradient)
+	  ol.x._._.x._.x.x._.x.x._.res.x : [28 x 28 x 32 x *] }
+	{ ol.x._._.x._.x.x._.x.x : [28 x 28 x 32 x *]
+	  ol.x._._.x._.x.x._.x.x._.c : [28 x 28 x 32 x *] (gradient) }
+	{ ol.x._._.x._.x.x._.x : [13 x 13 x 32 x *]
+	  ol.x._._.x._.x.x._.x.x._.res.x : [28 x 28 x 32 x *] (gradient) }
+	{ model.arrayOfFunctions[1].b : [1 x 1 x 32] (gradient)
+	  ol.x._._.x._.x.x._.x.x : [28 x 28 x 32 x *] (gradient) }
+	{ model.arrayOfFunctions[4].W : [3 x 3 x 32 x 48] (gradient)
+	  ol.x._._.x._.x.x._.res.x : [11 x 11 x 48 x *] }
+	{ ol.x._._.x._.x.x : [11 x 11 x 48 x *]
+	  ol.x._._.x._.x.x._.c : [11 x 11 x 48 x *] (gradient) }
+	{ ol.x._._.x._.x : [5 x 5 x 48 x *]
+	  ol.x._._.x._.x.x._.res.x : [11 x 11 x 48 x *] (gradient)
+	  ol.x._._.x._.x.x._.x : [13 x 13 x 32 x *] (gradient) }
+	{ model.arrayOfFunctions[4].b : [1 x 1 x 48] (gradient)
+	  ol.x._._.x._.x.x : [11 x 11 x 48 x *] (gradient) }
+	{ model.arrayOfFunctions[7].W : [3 x 3 x 48 x 64] (gradient)
+	  ol.x._._.x._.res.x : [3 x 3 x 64 x *] }
+	{ _ol.x._._.x : [3 x 3 x 64 x *]
+	  ol.x._._.x._.c : [3 x 3 x 64 x *] (gradient) }
+	{ ol.x._._.x.PlusArgs[0] : [96 x *]
+	  ol.x._._.x._.res.x : [3 x 3 x 64 x *] (gradient)
+	  ol.x._._.x._.x : [5 x 5 x 48 x *] (gradient) }
+	{ model.arrayOfFunctions[9].arrayOfFunctions[0].W : [96 x 3 x 3 x 64] (gradient)
+	  ol.x._._.x : [96 x *] }
+	{ model.arrayOfFunctions[9].arrayOfFunctions[0].b : [96] (gradient)
+	  ol.x._ : [96 x *] }
+	{ _ol.x._._.x : [3 x 3 x 64 x *] (gradient)
+	  model.arrayOfFunctions[7].b : [1 x 1 x 64] (gradient)
+	  ol.x : [96 x *]
+	  ol.x._._.x : [96 x *] (gradient) }
+	{ ol.PlusArgs[0] : [10 x *]
+	  ol.x._ : [96 x *] (gradient) }
+	{ model.arrayOfFunctions[12].W : [10 x 96] (gradient)
+	  ol : [10 x *] (gradient) }
+
+
+Training 98778 parameters in 10 out of 10 parameter tensors and 28 nodes with gradient:
+
+	Node 'model.arrayOfFunctions[12].W' (LearnableParameter operation) : [10 x 96]
+	Node 'model.arrayOfFunctions[12].b' (LearnableParameter operation) : [10]
+	Node 'model.arrayOfFunctions[1].W' (LearnableParameter operation) : [5 x 5 x 1 x 32]
+	Node 'model.arrayOfFunctions[1].b' (LearnableParameter operation) : [1 x 1 x 32]
+	Node 'model.arrayOfFunctions[4].W' (LearnableParameter operation) : [3 x 3 x 32 x 48]
+	Node 'model.arrayOfFunctions[4].b' (LearnableParameter operation) : [1 x 1 x 48]
+	Node 'model.arrayOfFunctions[7].W' (LearnableParameter operation) : [3 x 3 x 48 x 64]
+	Node 'model.arrayOfFunctions[7].b' (LearnableParameter operation) : [1 x 1 x 64]
+	Node 'model.arrayOfFunctions[9].arrayOfFunctions[0].W' (LearnableParameter operation) : [96 x 3 x 3 x 64]
+	Node 'model.arrayOfFunctions[9].arrayOfFunctions[0].b' (LearnableParameter operation) : [96]
+
+No PreCompute nodes found, or all already computed. Skipping pre-computation step.
+Setting dropout rate to 0.5.
+
+Starting Epoch 1: learning rate per sample = 0.001000  effective momentum = 0.000000  momentum as time constant = 0.0 samples
+
+Starting minibatch loop.
+(GPU): creating curand object with seed 0
+ Epoch[ 1 of 40]-Minibatch[   1- 500, 53.33%]: ce = 0.62419489 * 32000; errs = 20.328% * 32000; time = 3.4048s; samplesPerSecond = 9398.6
+Finished Epoch[ 1 of 40]: [Training] ce = 0.40323372 * 60000; errs = 12.883% * 60000; totalSamplesSeen = 60000; learningRatePerSample = 0.001; epochTime=5.42783s
+SGD: Saving checkpoint model './Models/ConvNet_MNIST.1'
+
+Starting Epoch 2: learning rate per sample = 0.001000  effective momentum = 0.000000  momentum as time constant = 0.0 samples
+
+Starting minibatch loop.
+(GPU): creating curand object with seed 1
+ Epoch[ 2 of 40]-Minibatch[   1- 500, 53.33%]: ce = 0.10666636 * 32000; errs = 3.059% * 32000; time = 2.3062s; samplesPerSecond = 13875.8
+Finished Epoch[ 2 of 40]: [Training] ce = 0.10224360 * 60000; errs = 2.883% * 60000; totalSamplesSeen = 120000; learningRatePerSample = 0.001; epochTime=4.31681s
+SGD: Saving checkpoint model './Models/ConvNet_MNIST.2'
+
+Starting Epoch 3: learning rate per sample = 0.001000  effective momentum = 0.000000  momentum as time constant = 0.0 samples
+
+Starting minibatch loop.
+(GPU): creating curand object with seed 2
+ Epoch[ 3 of 40]-Minibatch[   1- 500, 53.33%]: ce = 0.07900180 * 32000; errs = 2.275% * 32000; time = 2.2946s; samplesPerSecond = 13945.9
+Finished Epoch[ 3 of 40]: [Training] ce = 0.07751646 * 60000; errs = 2.210% * 60000; totalSamplesSeen = 180000; learningRatePerSample = 0.001; epochTime=4.31947s
+SGD: Saving checkpoint model './Models/ConvNet_MNIST.3'
+
+Starting Epoch 4: learning rate per sample = 0.001000  effective momentum = 0.000000  momentum as time constant = 0.0 samples
+
+Starting minibatch loop.
+(GPU): creating curand object with seed 3
+ Epoch[ 4 of 40]-Minibatch[   1- 500, 53.33%]: ce = 0.06445656 * 32000; errs = 1.850% * 32000; time = 2.2991s; samplesPerSecond = 13918.4
+Finished Epoch[ 4 of 40]: [Training] ce = 0.06185900 * 60000; errs = 1.822% * 60000; totalSamplesSeen = 240000; learningRatePerSample = 0.001; epochTime=4.31228s
+SGD: Saving checkpoint model './Models/ConvNet_MNIST.4'
+
+Starting Epoch 5: learning rate per sample = 0.001000  effective momentum = 0.000000  momentum as time constant = 0.0 samples
+
+Starting minibatch loop.
+(GPU): creating curand object with seed 4
+ Epoch[ 5 of 40]-Minibatch[   1- 500, 53.33%]: ce = 0.05471466 * 32000; errs = 1.553% * 32000; time = 2.2986s; samplesPerSecond = 13921.5
+Finished Epoch[ 5 of 40]: [Training] ce = 0.05271490 * 60000; errs = 1.492% * 60000; totalSamplesSeen = 300000; learningRatePerSample = 0.001; epochTime=4.3117s
+SGD: Saving checkpoint model './Models/ConvNet_MNIST.5'
+
+Starting Epoch 6: learning rate per sample = 0.001000  effective momentum = 0.939413  momentum as time constant = 1024.0 samples
+
+Starting minibatch loop.
+(GPU): creating curand object with seed 5
+ Epoch[ 6 of 40]-Minibatch[   1- 500, 53.33%]: ce = 0.04700863 * 32000; errs = 1.334% * 32000; time = 2.3045s; samplesPerSecond = 13885.9
+Finished Epoch[ 6 of 40]: [Training] ce = 0.04401101 * 60000; errs = 1.242% * 60000; totalSamplesSeen = 360000; learningRatePerSample = 0.001; epochTime=4.32959s
+SGD: Saving checkpoint model './Models/ConvNet_MNIST.6'
+
+Starting Epoch 7: learning rate per sample = 0.001000  effective momentum = 0.939413  momentum as time constant = 1024.0 samples
+
+Starting minibatch loop.
+(GPU): creating curand object with seed 6
+ Epoch[ 7 of 40]-Minibatch[   1- 500, 53.33%]: ce = 0.03940832 * 32000; errs = 1.197% * 32000; time = 2.3190s; samplesPerSecond = 13799.1
+Finished Epoch[ 7 of 40]: [Training] ce = 0.04045555 * 60000; errs = 1.210% * 60000; totalSamplesSeen = 420000; learningRatePerSample = 0.001; epochTime=4.35686s
+SGD: Saving checkpoint model './Models/ConvNet_MNIST.7'
+
+Starting Epoch 8: learning rate per sample = 0.001000  effective momentum = 0.939413  momentum as time constant = 1024.0 samples
+
+Starting minibatch loop.
+(GPU): creating curand object with seed 7
+ Epoch[ 8 of 40]-Minibatch[   1- 500, 53.33%]: ce = 0.03744642 * 32000; errs = 1.041% * 32000; time = 2.3292s; samplesPerSecond = 13738.4
+Finished Epoch[ 8 of 40]: [Training] ce = 0.03585531 * 60000; errs = 1.033% * 60000; totalSamplesSeen = 480000; learningRatePerSample = 0.001; epochTime=4.35888s
+SGD: Saving checkpoint model './Models/ConvNet_MNIST.8'
+
+Starting Epoch 9: learning rate per sample = 0.001000  effective momentum = 0.939413  momentum as time constant = 1024.0 samples
+
+Starting minibatch loop.
+(GPU): creating curand object with seed 8
+ Epoch[ 9 of 40]-Minibatch[   1- 500, 53.33%]: ce = 0.03133960 * 32000; errs = 0.859% * 32000; time = 2.2993s; samplesPerSecond = 13917.6
+Finished Epoch[ 9 of 40]: [Training] ce = 0.03190069 * 60000; errs = 0.893% * 60000; totalSamplesSeen = 540000; learningRatePerSample = 0.001; epochTime=4.31552s
+SGD: Saving checkpoint model './Models/ConvNet_MNIST.9'
+
+Starting Epoch 10: learning rate per sample = 0.001000  effective momentum = 0.939413  momentum as time constant = 1024.0 samples
+
+Starting minibatch loop.
+(GPU): creating curand object with seed 9
+ Epoch[10 of 40]-Minibatch[   1- 500, 53.33%]: ce = 0.03079833 * 32000; errs = 0.941% * 32000; time = 2.3021s; samplesPerSecond = 13900.3
+Finished Epoch[10 of 40]: [Training] ce = 0.02950229 * 60000; errs = 0.893% * 60000; totalSamplesSeen = 600000; learningRatePerSample = 0.001; epochTime=4.31635s
+SGD: Saving checkpoint model './Models/ConvNet_MNIST.10'
+
+Starting Epoch 11: learning rate per sample = 0.000500  effective momentum = 0.939413  momentum as time constant = 1024.0 samples
+
+Starting minibatch loop.
+(GPU): creating curand object with seed 10
+ Epoch[11 of 40]-Minibatch[   1- 500, 53.33%]: ce = 0.02282827 * 32000; errs = 0.678% * 32000; time = 2.2997s; samplesPerSecond = 13914.8
+Finished Epoch[11 of 40]: [Training] ce = 0.02288932 * 60000; errs = 0.668% * 60000; totalSamplesSeen = 660000; learningRatePerSample = 0.00050000002; epochTime=4.31169s
+SGD: Saving checkpoint model './Models/ConvNet_MNIST.11'
+
+Starting Epoch 12: learning rate per sample = 0.000500  effective momentum = 0.939413  momentum as time constant = 1024.0 samples
+
+Starting minibatch loop.
+(GPU): creating curand object with seed 11
+ Epoch[12 of 40]-Minibatch[   1- 500, 53.33%]: ce = 0.02145553 * 32000; errs = 0.622% * 32000; time = 2.3053s; samplesPerSecond = 13881.2
+Finished Epoch[12 of 40]: [Training] ce = 0.02142964 * 60000; errs = 0.640% * 60000; totalSamplesSeen = 720000; learningRatePerSample = 0.00050000002; epochTime=4.32183s
+SGD: Saving checkpoint model './Models/ConvNet_MNIST.12'
+
+Starting Epoch 13: learning rate per sample = 0.000500  effective momentum = 0.939413  momentum as time constant = 1024.0 samples
+
+Starting minibatch loop.
+(GPU): creating curand object with seed 12
+ Epoch[13 of 40]-Minibatch[   1- 500, 53.33%]: ce = 0.01844596 * 32000; errs = 0.562% * 32000; time = 2.3110s; samplesPerSecond = 13846.8
+Finished Epoch[13 of 40]: [Training] ce = 0.01962943 * 60000; errs = 0.577% * 60000; totalSamplesSeen = 780000; learningRatePerSample = 0.00050000002; epochTime=4.32934s
+SGD: Saving checkpoint model './Models/ConvNet_MNIST.13'
+
+Starting Epoch 14: learning rate per sample = 0.000500  effective momentum = 0.939413  momentum as time constant = 1024.0 samples
+
+Starting minibatch loop.
+(GPU): creating curand object with seed 13
+ Epoch[14 of 40]-Minibatch[   1- 500, 53.33%]: ce = 0.01937236 * 32000; errs = 0.584% * 32000; time = 2.3056s; samplesPerSecond = 13879.5
+Finished Epoch[14 of 40]: [Training] ce = 0.01954881 * 60000; errs = 0.598% * 60000; totalSamplesSeen = 840000; learningRatePerSample = 0.00050000002; epochTime=4.32255s
+SGD: Saving checkpoint model './Models/ConvNet_MNIST.14'
+
+Starting Epoch 15: learning rate per sample = 0.000500  effective momentum = 0.939413  momentum as time constant = 1024.0 samples
+
+Starting minibatch loop.
+(GPU): creating curand object with seed 14
+ Epoch[15 of 40]-Minibatch[   1- 500, 53.33%]: ce = 0.01687295 * 32000; errs = 0.537% * 32000; time = 2.3096s; samplesPerSecond = 13855.3
+Finished Epoch[15 of 40]: [Training] ce = 0.01822053 * 60000; errs = 0.520% * 60000; totalSamplesSeen = 900000; learningRatePerSample = 0.00050000002; epochTime=4.32403s
+SGD: Saving checkpoint model './Models/ConvNet_MNIST.15'
+
+Starting Epoch 16: learning rate per sample = 0.000500  effective momentum = 0.939413  momentum as time constant = 1024.0 samples
+
+Starting minibatch loop.
+(GPU): creating curand object with seed 15
+ Epoch[16 of 40]-Minibatch[   1- 500, 53.33%]: ce = 0.01790642 * 32000; errs = 0.584% * 32000; time = 2.3019s; samplesPerSecond = 13901.3
+Finished Epoch[16 of 40]: [Training] ce = 0.01828687 * 60000; errs = 0.567% * 60000; totalSamplesSeen = 960000; learningRatePerSample = 0.00050000002; epochTime=4.31949s
+SGD: Saving checkpoint model './Models/ConvNet_MNIST.16'
+
+Starting Epoch 17: learning rate per sample = 0.000500  effective momentum = 0.939413  momentum as time constant = 1024.0 samples
+
+Starting minibatch loop.
+(GPU): creating curand object with seed 16
+ Epoch[17 of 40]-Minibatch[   1- 500, 53.33%]: ce = 0.01582351 * 32000; errs = 0.459% * 32000; time = 2.3027s; samplesPerSecond = 13896.5
+Finished Epoch[17 of 40]: [Training] ce = 0.01619400 * 60000; errs = 0.490% * 60000; totalSamplesSeen = 1020000; learningRatePerSample = 0.00050000002; epochTime=4.32421s
+SGD: Saving checkpoint model './Models/ConvNet_MNIST.17'
+
+Starting Epoch 18: learning rate per sample = 0.000500  effective momentum = 0.939413  momentum as time constant = 1024.0 samples
+
+Starting minibatch loop.
+(GPU): creating curand object with seed 17
+ Epoch[18 of 40]-Minibatch[   1- 500, 53.33%]: ce = 0.01525216 * 32000; errs = 0.462% * 32000; time = 2.3216s; samplesPerSecond = 13783.9
+Finished Epoch[18 of 40]: [Training] ce = 0.01671511 * 60000; errs = 0.505% * 60000; totalSamplesSeen = 1080000; learningRatePerSample = 0.00050000002; epochTime=4.33925s
+SGD: Saving checkpoint model './Models/ConvNet_MNIST.18'
+
+Starting Epoch 19: learning rate per sample = 0.000500  effective momentum = 0.939413  momentum as time constant = 1024.0 samples
+
+Starting minibatch loop.
+(GPU): creating curand object with seed 18
+ Epoch[19 of 40]-Minibatch[   1- 500, 53.33%]: ce = 0.01527744 * 32000; errs = 0.478% * 32000; time = 2.3135s; samplesPerSecond = 13832.1
+Finished Epoch[19 of 40]: [Training] ce = 0.01576305 * 60000; errs = 0.470% * 60000; totalSamplesSeen = 1140000; learningRatePerSample = 0.00050000002; epochTime=4.33038s
+SGD: Saving checkpoint model './Models/ConvNet_MNIST.19'
+
+Starting Epoch 20: learning rate per sample = 0.000500  effective momentum = 0.939413  momentum as time constant = 1024.0 samples
+
+Starting minibatch loop.
+(GPU): creating curand object with seed 19
+ Epoch[20 of 40]-Minibatch[   1- 500, 53.33%]: ce = 0.01440453 * 32000; errs = 0.469% * 32000; time = 2.3008s; samplesPerSecond = 13908.2
+Finished Epoch[20 of 40]: [Training] ce = 0.01473821 * 60000; errs = 0.483% * 60000; totalSamplesSeen = 1200000; learningRatePerSample = 0.00050000002; epochTime=4.31825s
+SGD: Saving checkpoint model './Models/ConvNet_MNIST.20'
+
+Starting Epoch 21: learning rate per sample = 0.000100  effective momentum = 0.939413  momentum as time constant = 1024.0 samples
+
+Starting minibatch loop.
+(GPU): creating curand object with seed 20
+ Epoch[21 of 40]-Minibatch[   1- 500, 53.33%]: ce = 0.01257898 * 32000; errs = 0.400% * 32000; time = 2.3032s; samplesPerSecond = 13894.0
+Finished Epoch[21 of 40]: [Training] ce = 0.01218402 * 60000; errs = 0.373% * 60000; totalSamplesSeen = 1260000; learningRatePerSample = 9.9999997e-05; epochTime=4.31855s
+SGD: Saving checkpoint model './Models/ConvNet_MNIST.21'
+
+Starting Epoch 22: learning rate per sample = 0.000100  effective momentum = 0.939413  momentum as time constant = 1024.0 samples
+
+Starting minibatch loop.
+(GPU): creating curand object with seed 21
+ Epoch[22 of 40]-Minibatch[   1- 500, 53.33%]: ce = 0.01040987 * 32000; errs = 0.291% * 32000; time = 2.3020s; samplesPerSecond = 13901.0
+Finished Epoch[22 of 40]: [Training] ce = 0.01121403 * 60000; errs = 0.305% * 60000; totalSamplesSeen = 1320000; learningRatePerSample = 9.9999997e-05; epochTime=4.31902s
+SGD: Saving checkpoint model './Models/ConvNet_MNIST.22'
+
+Starting Epoch 23: learning rate per sample = 0.000100  effective momentum = 0.939413  momentum as time constant = 1024.0 samples
+
+Starting minibatch loop.
+(GPU): creating curand object with seed 22
+ Epoch[23 of 40]-Minibatch[   1- 500, 53.33%]: ce = 0.01130340 * 32000; errs = 0.328% * 32000; time = 2.3294s; samplesPerSecond = 13737.6
+Finished Epoch[23 of 40]: [Training] ce = 0.01091773 * 60000; errs = 0.332% * 60000; totalSamplesSeen = 1380000; learningRatePerSample = 9.9999997e-05; epochTime=4.35001s
+SGD: Saving checkpoint model './Models/ConvNet_MNIST.23'
+
+Starting Epoch 24: learning rate per sample = 0.000100  effective momentum = 0.939413  momentum as time constant = 1024.0 samples
+
+Starting minibatch loop.
+(GPU): creating curand object with seed 23
+ Epoch[24 of 40]-Minibatch[   1- 500, 53.33%]: ce = 0.01140574 * 32000; errs = 0.334% * 32000; time = 2.3119s; samplesPerSecond = 13841.2
+Finished Epoch[24 of 40]: [Training] ce = 0.01075253 * 60000; errs = 0.312% * 60000; totalSamplesSeen = 1440000; learningRatePerSample = 9.9999997e-05; epochTime=4.33768s
+SGD: Saving checkpoint model './Models/ConvNet_MNIST.24'
+
+Starting Epoch 25: learning rate per sample = 0.000100  effective momentum = 0.939413  momentum as time constant = 1024.0 samples
+
+Starting minibatch loop.
+(GPU): creating curand object with seed 24
+ Epoch[25 of 40]-Minibatch[   1- 500, 53.33%]: ce = 0.01198318 * 32000; errs = 0.363% * 32000; time = 2.3106s; samplesPerSecond = 13849.1
+Finished Epoch[25 of 40]: [Training] ce = 0.01111877 * 60000; errs = 0.343% * 60000; totalSamplesSeen = 1500000; learningRatePerSample = 9.9999997e-05; epochTime=4.33196s
+SGD: Saving checkpoint model './Models/ConvNet_MNIST.25'
+
+Starting Epoch 26: learning rate per sample = 0.000100  effective momentum = 0.939413  momentum as time constant = 1024.0 samples
+
+Starting minibatch loop.
+(GPU): creating curand object with seed 25
+ Epoch[26 of 40]-Minibatch[   1- 500, 53.33%]: ce = 0.00947249 * 32000; errs = 0.312% * 32000; time = 2.3043s; samplesPerSecond = 13887.1
+Finished Epoch[26 of 40]: [Training] ce = 0.01021505 * 60000; errs = 0.320% * 60000; totalSamplesSeen = 1560000; learningRatePerSample = 9.9999997e-05; epochTime=4.32614s
+SGD: Saving checkpoint model './Models/ConvNet_MNIST.26'
+
+Starting Epoch 27: learning rate per sample = 0.000100  effective momentum = 0.939413  momentum as time constant = 1024.0 samples
+
+Starting minibatch loop.
+(GPU): creating curand object with seed 26
+ Epoch[27 of 40]-Minibatch[   1- 500, 53.33%]: ce = 0.01075765 * 32000; errs = 0.306% * 32000; time = 2.3037s; samplesPerSecond = 13890.6
+Finished Epoch[27 of 40]: [Training] ce = 0.01087295 * 60000; errs = 0.313% * 60000; totalSamplesSeen = 1620000; learningRatePerSample = 9.9999997e-05; epochTime=4.32174s
+SGD: Saving checkpoint model './Models/ConvNet_MNIST.27'
+
+Starting Epoch 28: learning rate per sample = 0.000100  effective momentum = 0.939413  momentum as time constant = 1024.0 samples
+
+Starting minibatch loop.
+(GPU): creating curand object with seed 27
+ Epoch[28 of 40]-Minibatch[   1- 500, 53.33%]: ce = 0.00855591 * 32000; errs = 0.272% * 32000; time = 2.3062s; samplesPerSecond = 13875.5
+Finished Epoch[28 of 40]: [Training] ce = 0.00970989 * 60000; errs = 0.295% * 60000; totalSamplesSeen = 1680000; learningRatePerSample = 9.9999997e-05; epochTime=4.33773s
+SGD: Saving checkpoint model './Models/ConvNet_MNIST.28'
+
+Starting Epoch 29: learning rate per sample = 0.000100  effective momentum = 0.939413  momentum as time constant = 1024.0 samples
+
+Starting minibatch loop.
+(GPU): creating curand object with seed 28
+ Epoch[29 of 40]-Minibatch[   1- 500, 53.33%]: ce = 0.01165616 * 32000; errs = 0.353% * 32000; time = 2.3129s; samplesPerSecond = 13835.4
+Finished Epoch[29 of 40]: [Training] ce = 0.01052080 * 60000; errs = 0.323% * 60000; totalSamplesSeen = 1740000; learningRatePerSample = 9.9999997e-05; epochTime=4.34018s
+SGD: Saving checkpoint model './Models/ConvNet_MNIST.29'
+
+Starting Epoch 30: learning rate per sample = 0.000100  effective momentum = 0.939413  momentum as time constant = 1024.0 samples
+
+Starting minibatch loop.
+(GPU): creating curand object with seed 29
+ Epoch[30 of 40]-Minibatch[   1- 500, 53.33%]: ce = 0.00963924 * 32000; errs = 0.300% * 32000; time = 2.3097s; samplesPerSecond = 13854.8
+Finished Epoch[30 of 40]: [Training] ce = 0.00970715 * 60000; errs = 0.285% * 60000; totalSamplesSeen = 1800000; learningRatePerSample = 9.9999997e-05; epochTime=4.32907s
+SGD: Saving checkpoint model './Models/ConvNet_MNIST.30'
+
+Starting Epoch 31: learning rate per sample = 0.000100  effective momentum = 0.939413  momentum as time constant = 1024.0 samples
+
+Starting minibatch loop.
+(GPU): creating curand object with seed 30
+ Epoch[31 of 40]-Minibatch[   1- 500, 53.33%]: ce = 0.01049728 * 32000; errs = 0.278% * 32000; time = 2.3182s; samplesPerSecond = 13804.0
+Finished Epoch[31 of 40]: [Training] ce = 0.00974383 * 60000; errs = 0.277% * 60000; totalSamplesSeen = 1860000; learningRatePerSample = 9.9999997e-05; epochTime=4.34974s
+SGD: Saving checkpoint model './Models/ConvNet_MNIST.31'
+
+Starting Epoch 32: learning rate per sample = 0.000100  effective momentum = 0.939413  momentum as time constant = 1024.0 samples
+
+Starting minibatch loop.
+(GPU): creating curand object with seed 31
+ Epoch[32 of 40]-Minibatch[   1- 500, 53.33%]: ce = 0.00942432 * 32000; errs = 0.303% * 32000; time = 2.3072s; samplesPerSecond = 13869.6
+FFinished Epoch[32 of 40]: [Training] ce = 0.00942061 * 60000; errs = 0.283% * 60000; totalSamplesSeen = 1920000; learningRatePerSample = 9.9999997e-05; epochTime=4.32817s
+SGD: Saving checkpoint model './Models/ConvNet_MNIST.32'
+
+Starting Epoch 33: learning rate per sample = 0.000100  effective momentum = 0.939413  momentum as time constant = 1024.0 samples
+
+Starting minibatch loop.
+(GPU): creating curand object with seed 32
+  Epoch[33 of 40]-Minibatch[   1- 500, 53.33%]: ce = 0.01043458 * 32000; errs = 0.322% * 32000; time = 2.3078s; samplesPerSecond = 13866.0
+FFinished Epoch[33 of 40]: [Training] ce = 0.00995027 * 60000; errs = 0.308% * 60000; totalSamplesSeen = 1980000; learningRatePerSample = 9.9999997e-05; epochTime=4.32463s
+SGD: Saving checkpoint model './Models/ConvNet_MNIST.33'
+
+Starting Epoch 34: learning rate per sample = 0.000100  effective momentum = 0.939413  momentum as time constant = 1024.0 samples
+
+Starting minibatch loop.
+(GPU): creating curand object with seed 33
+  Epoch[34 of 40]-Minibatch[   1- 500, 53.33%]: ce = 0.00932919 * 32000; errs = 0.256% * 32000; time = 2.3089s; samplesPerSecond = 13859.4
+FFinished Epoch[34 of 40]: [Training] ce = 0.00890160 * 60000; errs = 0.250% * 60000; totalSamplesSeen = 2040000; learningRatePerSample = 9.9999997e-05; epochTime=4.32932s
+SGD: Saving checkpoint model './Models/ConvNet_MNIST.34'
+
+Starting Epoch 35: learning rate per sample = 0.000100  effective momentum = 0.939413  momentum as time constant = 1024.0 samples
+
+Starting minibatch loop.
+(GPU): creating curand object with seed 34
+  Epoch[35 of 40]-Minibatch[   1- 500, 53.33%]: ce = 0.00932999 * 32000; errs = 0.278% * 32000; time = 2.3160s; samplesPerSecond = 13816.9
+Finished Epoch[35 of 40]: [Training] ce = 0.00964115 * 60000; errs = 0.282% * 60000; totalSamplesSeen = 2100000; learningRatePerSample = 9.9999997e-05; epochTime=4.34265s
+SGD: Saving checkpoint model './Models/ConvNet_MNIST.35'
+
+Starting Epoch 36: learning rate per sample = 0.000100  effective momentum = 0.939413  momentum as time constant = 1024.0 samples
+
+Starting minibatch loop.
+(GPU): creating curand object with seed 35
+ Epoch[36 of 40]-Minibatch[   1- 500, 53.33%]: ce = 0.01035328 * 32000; errs = 0.344% * 32000; time = 2.3177s; samplesPerSecond = 13806.7
+Finished Epoch[36 of 40]: [Training] ce = 0.00925246 * 60000; errs = 0.297% * 60000; totalSamplesSeen = 2160000; learningRatePerSample = 9.9999997e-05; epochTime=4.34117s
+SGD: Saving checkpoint model './Models/ConvNet_MNIST.36'
+
+Starting Epoch 37: learning rate per sample = 0.000100  effective momentum = 0.939413  momentum as time constant = 1024.0 samples
+
+Starting minibatch loop.
+(GPU): creating curand object with seed 36
+ Epoch[37 of 40]-Minibatch[   1- 500, 53.33%]: ce = 0.00918878 * 32000; errs = 0.231% * 32000; time = 2.3228s; samplesPerSecond = 13776.4
+Finished Epoch[37 of 40]: [Training] ce = 0.00910457 * 60000; errs = 0.232% * 60000; totalSamplesSeen = 2220000; learningRatePerSample = 9.9999997e-05; epochTime=4.35214s
+SGD: Saving checkpoint model './Models/ConvNet_MNIST.37'
+
+Starting Epoch 38: learning rate per sample = 0.000100  effective momentum = 0.939413  momentum as time constant = 1024.0 samples
+
+Starting minibatch loop.
+(GPU): creating curand object with seed 37
+ Epoch[38 of 40]-Minibatch[   1- 500, 53.33%]: ce = 0.00864085 * 32000; errs = 0.272% * 32000; time = 2.3071s; samplesPerSecond = 13870.4
+Finished Epoch[38 of 40]: [Training] ce = 0.00897043 * 60000; errs = 0.285% * 60000; totalSamplesSeen = 2280000; learningRatePerSample = 9.9999997e-05; epochTime=4.33331s
+SGD: Saving checkpoint model './Models/ConvNet_MNIST.38'
+
+Starting Epoch 39: learning rate per sample = 0.000100  effective momentum = 0.939413  momentum as time constant = 1024.0 samples
+
+Starting minibatch loop.
+(GPU): creating curand object with seed 38
+ Epoch[39 of 40]-Minibatch[   1- 500, 53.33%]: ce = 0.00924453 * 32000; errs = 0.303% * 32000; time = 2.3090s; samplesPerSecond = 13858.7
+Finished Epoch[39 of 40]: [Training] ce = 0.00868663 * 60000; errs = 0.257% * 60000; totalSamplesSeen = 2340000; learningRatePerSample = 9.9999997e-05; epochTime=4.327s
+SGD: Saving checkpoint model './Models/ConvNet_MNIST.39'
+
+Starting Epoch 40: learning rate per sample = 0.000100  effective momentum = 0.939413  momentum as time constant = 1024.0 samples
+
+Starting minibatch loop.
+(GPU): creating curand object with seed 39
+ Epoch[40 of 40]-Minibatch[   1- 500, 53.33%]: ce = 0.00851983 * 32000; errs = 0.256% * 32000; time = 2.3037s; samplesPerSecond = 13890.9
+FFinished Epoch[40 of 40]: [Training] ce = 0.00909239 * 60000; errs = 0.258% * 60000; totalSamplesSeen = 2400000; learningRatePerSample = 9.9999997e-05; epochTime=4.32286s
+SGD: Saving checkpoint model './Models/ConvNet_MNIST'
+
+Action "train" complete.
+
+
+##############################################################################
+#                                                                            #
+# testNetwork command (test action)                                          #
+#                                                                            #
+##############################################################################
+
+
+Post-processing network...
+
+3 roots:
+	ce = CrossEntropyWithSoftmax()
+	errs = ClassificationError()
+	ol = Plus()
+
+Validating network. 33 nodes to process in pass 1.
+
+Validating --> labels = InputValue() :  -> [10 x *1]
+Validating --> model.arrayOfFunctions[12].W = LearnableParameter() :  -> [10 x 96]
+Validating --> model.arrayOfFunctions[9].arrayOfFunctions[0].W = LearnableParameter() :  -> [96 x 3 x 3 x 64]
+Validating --> model.arrayOfFunctions[7].W = LearnableParameter() :  -> [3 x 3 x 48 x 64]
+Validating --> model.arrayOfFunctions[4].W = LearnableParameter() :  -> [3 x 3 x 32 x 48]
+Validating --> model.arrayOfFunctions[1].W = LearnableParameter() :  -> [5 x 5 x 1 x 32]
+Validating --> ol.x._._.x._.x.x._.x.x._.x.ElementTimesArgs[0] = LearnableParameter() :  -> [1 x 1]
+Validating --> features = InputValue() :  -> [28 x 28 x 1 x *1]
+Validating --> ol.x._._.x._.x.x._.x.x._.x = ElementTimes (ol.x._._.x._.x.x._.x.x._.x.ElementTimesArgs[0], features) : [1 x 1], [28 x 28 x 1 x *1] -> [28 x 28 x 1 x *1]
+Validating --> ol.x._._.x._.x.x._.x.x._.c = Convolution (model.arrayOfFunctions[1].W, ol.x._._.x._.x.x._.x.x._.x) : [5 x 5 x 1 x 32], [28 x 28 x 1 x *1] -> [28 x 28 x 32 x *1]
+Validating --> model.arrayOfFunctions[1].b = LearnableParameter() :  -> [1 x 1 x 32]
+Validating --> ol.x._._.x._.x.x._.x.x._.res.x = Plus (ol.x._._.x._.x.x._.x.x._.c, model.arrayOfFunctions[1].b) : [28 x 28 x 32 x *1], [1 x 1 x 32] -> [28 x 28 x 32 x *1]
+Validating --> ol.x._._.x._.x.x._.x.x = RectifiedLinear (ol.x._._.x._.x.x._.x.x._.res.x) : [28 x 28 x 32 x *1] -> [28 x 28 x 32 x *1]
+Validating --> ol.x._._.x._.x.x._.x = Pooling (ol.x._._.x._.x.x._.x.x) : [28 x 28 x 32 x *1] -> [13 x 13 x 32 x *1]
+Validating --> ol.x._._.x._.x.x._.c = Convolution (model.arrayOfFunctions[4].W, ol.x._._.x._.x.x._.x) : [3 x 3 x 32 x 48], [13 x 13 x 32 x *1] -> [11 x 11 x 48 x *1]
+Validating --> model.arrayOfFunctions[4].b = LearnableParameter() :  -> [1 x 1 x 48]
+Validating --> ol.x._._.x._.x.x._.res.x = Plus (ol.x._._.x._.x.x._.c, model.arrayOfFunctions[4].b) : [11 x 11 x 48 x *1], [1 x 1 x 48] -> [11 x 11 x 48 x *1]
+Validating --> ol.x._._.x._.x.x = RectifiedLinear (ol.x._._.x._.x.x._.res.x) : [11 x 11 x 48 x *1] -> [11 x 11 x 48 x *1]
+Validating --> ol.x._._.x._.x = Pooling (ol.x._._.x._.x.x) : [11 x 11 x 48 x *1] -> [5 x 5 x 48 x *1]
+Validating --> ol.x._._.x._.c = Convolution (model.arrayOfFunctions[7].W, ol.x._._.x._.x) : [3 x 3 x 48 x 64], [5 x 5 x 48 x *1] -> [3 x 3 x 64 x *1]
+Validating --> model.arrayOfFunctions[7].b = LearnableParameter() :  -> [1 x 1 x 64]
+Validating --> ol.x._._.x._.res.x = Plus (ol.x._._.x._.c, model.arrayOfFunctions[7].b) : [3 x 3 x 64 x *1], [1 x 1 x 64] -> [3 x 3 x 64 x *1]
+Validating --> _ol.x._._.x = RectifiedLinear (ol.x._._.x._.res.x) : [3 x 3 x 64 x *1] -> [3 x 3 x 64 x *1]
+Validating --> ol.x._._.x.PlusArgs[0] = Times (model.arrayOfFunctions[9].arrayOfFunctions[0].W, _ol.x._._.x) : [96 x 3 x 3 x 64], [3 x 3 x 64 x *1] -> [96 x *1]
+Validating --> model.arrayOfFunctions[9].arrayOfFunctions[0].b = LearnableParameter() :  -> [96]
+Validating --> ol.x._._.x = Plus (ol.x._._.x.PlusArgs[0], model.arrayOfFunctions[9].arrayOfFunctions[0].b) : [96 x *1], [96] -> [96 x *1]
+Validating --> ol.x._ = Dropout (ol.x._._.x) : [96 x *1] -> [96 x *1]
+Validating --> ol.x = RectifiedLinear (ol.x._) : [96 x *1] -> [96 x *1]
+Validating --> ol.PlusArgs[0] = Times (model.arrayOfFunctions[12].W, ol.x) : [10 x 96], [96 x *1] -> [10 x *1]
+Validating --> model.arrayOfFunctions[12].b = LearnableParameter() :  -> [10]
+Validating --> ol = Plus (ol.PlusArgs[0], model.arrayOfFunctions[12].b) : [10 x *1], [10] -> [10 x *1]
+Validating --> ce = CrossEntropyWithSoftmax (labels, ol) : [10 x *1], [10 x *1] -> [1]
+Validating --> errs = ClassificationError (labels, ol) : [10 x *1], [10 x *1] -> [1]
+
+Validating network. 20 nodes to process in pass 2.
+
+
+Validating network, final pass.
+
+ol.x._._.x._.x.x._.x.x._.c: using cuDNN convolution engine for geometry: Input: 28 x 28 x 1, Output: 28 x 28 x 32, Kernel: 5 x 5 x 1, Map: 32, Stride: 1 x 1 x 1, Sharing: (1, 1, 1), AutoPad: (1, 1, 0), LowerPad: 0 x 0 x 0, UpperPad: 0 x 0 x 0.
+ol.x._._.x._.x.x._.x: using cuDNN convolution engine for geometry: Input: 28 x 28 x 32, Output: 13 x 13 x 32, Kernel: 3 x 3 x 1, Map: 1, Stride: 2 x 2 x 1, Sharing: (1, 1, 1), AutoPad: (0, 0, 0), LowerPad: 0 x 0 x 0, UpperPad: 0 x 0 x 0.
+ol.x._._.x._.x.x._.c: using cuDNN convolution engine for geometry: Input: 13 x 13 x 32, Output: 11 x 11 x 48, Kernel: 3 x 3 x 32, Map: 48, Stride: 1 x 1 x 32, Sharing: (1, 1, 1), AutoPad: (0, 0, 0), LowerPad: 0 x 0 x 0, UpperPad: 0 x 0 x 0.
+ol.x._._.x._.x: using cuDNN convolution engine for geometry: Input: 11 x 11 x 48, Output: 5 x 5 x 48, Kernel: 3 x 3 x 1, Map: 1, Stride: 2 x 2 x 1, Sharing: (1, 1, 1), AutoPad: (0, 0, 0), LowerPad: 0 x 0 x 0, UpperPad: 0 x 0 x 0.
+ol.x._._.x._.c: using cuDNN convolution engine for geometry: Input: 5 x 5 x 48, Output: 3 x 3 x 64, Kernel: 3 x 3 x 48, Map: 64, Stride: 1 x 1 x 48, Sharing: (1, 1, 1), AutoPad: (0, 0, 0), LowerPad: 0 x 0 x 0, UpperPad: 0 x 0 x 0.
+
+
+
+Post-processing network complete.
+
+evalNodeNames are not specified, using all the default evalnodes and training criterion nodes.
+
+
+Allocating matrices for forward and/or backward propagation.
+
+Memory Sharing: Out of 33 matrices, 0 are shared as 0, and 33 are not shared.
+
+
+Minibatch[1-10]: errs = 0.490% * 10000; ce = 0.01749273 * 10000
+Final Results: Minibatch[1-10]: errs = 0.490% * 10000; ce = 0.01749273 * 10000; perplexity = 1.01764662
+
+Action "test" complete.
+
+COMPLETED.
