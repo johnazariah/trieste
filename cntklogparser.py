@@ -162,7 +162,6 @@ def parseLineAndAddToList(theLine, theList, lineInfoExtractor, epochOffset, isNe
 epochOffset = 0;
 filterCount = 0;
 finalEpochList = []
-print ("//" + sys.argv[1])
 with open(sys.argv[1], "r") as f:
    for line in f:
       filterCount = filterCount + parseLineAndAddToList(line, finalEpochList, computeActFinalEpoch, epochOffset, True)
