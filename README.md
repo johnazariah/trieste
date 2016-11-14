@@ -13,7 +13,7 @@
 1. `python trieste.py --help` should print out the usage instructions and quit.
 
 #### For the Electron Shell
-1. Install [Node](https://nodejs.org/en/). Code is tested at v7.0.0
+1. Install [Node](https://nodejs.org/en/). Recommending v7.0.0; v7.1.0 appears to have some issues and is not recommended.
 1. `cd shell`
 1. `npm install`
 1. `npm install -g typescript` (not tsc)
