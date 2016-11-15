@@ -99,11 +99,7 @@ def cluster(ctx):
     pass
 
 @cluster.command('create')
-@click.option(
-    '--cluster-id',
-    default=None,
-    help='The name of the cluster to create'
-)
+@click.option('--cluster-id', default=None, help='The name of the cluster to create')
 @click.option('--vm-size',
     type=click.Choice([
     'A1', 'A2', 'A3', 'A4', 'A5', 'A6', 'A7', 'A8', 'A9', 'A10', 'A11',
@@ -115,11 +111,7 @@ def cluster(ctx):
     'NV6', 'NV12', 'NV24',
     'NC6', 'NC12', 'NC24']),
     help='The size of the Azure VM to provision the cluster with')
-@click.option(
-    '--vm-count',
-    default=1,
-    help='The number of nodes required in the cluster'
-)
+@click.option('--vm-count', default=1, help='The number of nodes required in the cluster')
 @common_options
 @pass_cli_context
 def cluster_create(ctx, cluster_id, vm_size, vm_count):
@@ -210,16 +202,8 @@ def run_list(ctx, cluster_id):
 
 
 @run.command('get-data')
-@click.option(
-    '--run-id',
-    default=None,
-    help='The name of the run to get output for'
-)
-@click.option(
-    '--cluster-id',
-    default=None,
-    help='The name of the cluster on which the run was submitted'
-)
+@click.option('--run-id', default=None, help='The name of the run to get output for')
+@click.option('--cluster-id', default=None, help='The name of the cluster on which the run was submitted')
 @common_options
 @pass_cli_context
 def get_run_data(ctx, run_id, cluster_id):
@@ -233,17 +217,25 @@ def get_run_data(ctx, run_id, cluster_id):
     run_api = RunApi(config)
     run_api.get_run_data(run_id, cluster_id)
 
+@run.command('download-model')
+@click.option('--run-id', default=None, help='The name of the run to get output for')
+@click.option('--cluster-id', default=None, help='The name of the cluster on which the run was submitted')
+@common_options
+@pass_cli_context
+def download_model(ctx, run_id, cluster_id):
+    """Download the computed model file for the specified run"""
+    inputs = [
+        (ctx.credentials_file, "api/schema/credentials-schema.json",
+         configurations.to_shipyard_credentials)
+    ]
+
+    config = configurations.get_merged_shipyard_config(inputs)
+    run_api = RunApi(config)
+    run_api.download_data_model(run_id, cluster_id)
+
 @run.command('delete')
-@click.option(
-    '--run-id',
-    default=None,
-    help='The name of the run to delete'
-)
-@click.option(
-    '--cluster-id',
-    default=None,
-    help='The name of the cluster from which to delete the run'
-)
+@click.option('--run-id', default=None, help='The name of the run to delete')
+@click.option('--cluster-id', default=None, help='The name of the cluster from which to delete the run')
 @common_options
 @pass_cli_context
 def run_delete(ctx, run_id, cluster_id):

@@ -255,14 +255,22 @@ class RunApi(ShipyardApi):
         file = 'stderr.txt'
         print("Job : {}; Task : {}".format(cluster_id, run_id))
         stream = self.batch_client.file.get_from_task(cluster_id, run_id, file)
-        fp = pathlib.Path(cluster_id, run_id, file)
-        fp.parent.mkdir(mode=0o750, parents=True, exist_ok=True)        
-        with fp.open('wb') as f:
+        destination = pathlib.Path(cluster_id, run_id, file)
+        destination.parent.mkdir(mode=0o750, parents=True, exist_ok=True)
+        with destination.open('wb') as f:
             for fdata in stream:
                 f.write(fdata)
-        
-        logger.debug('file {} retrieved from job={} task={} bytes={}'.format(file, cluster_id, run_id, fp.stat().st_size))
 
+        logger.debug('file {} retrieved from job={} task={} bytes={}'.format(file, cluster_id, run_id, destination.stat().st_size))
+
+    def download_data_model(self, run_id, cluster_id):
+        file = ''
+        stream = self.batch_client.file.get_from_task(cluster_id, run_id, file)
+        destination = pathlib.Path(cluster_id, run_id, file)
+        destination.parent.mkdir(mode=0o750, parents=True, exist_ok=True)
+        with destination.open('wb') as f:
+            for fdata in stream:
+                f.write(fdata)
 
     def delete_run(self, run_id, cluster_id):
         self.batch_client.task.delete(cluster_id, task_id=run_id)
