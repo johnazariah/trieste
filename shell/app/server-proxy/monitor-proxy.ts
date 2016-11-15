@@ -32,7 +32,7 @@ export default class MonitorProxy {
         
         exec(downloadModelCommand, (_err, _stdout, _stderr) => {
             if (_err) {console.log(_err); return; }
-            alert("Downloaded Model!")
+            console.log("Downloaded Model!")
         });
     }
 }
