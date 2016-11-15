@@ -20,36 +20,36 @@
 							</div>
 							<label class="col-sm-4 control-label" for="clusterId">Cluster</label>
 							<div class="col-sm-8 control-label">
-								<select id="myDropdown"  class="form-control" (ngModelChange)="onChange($event)"><option *ngFor="let item of clusters.items | async">{{item.id}}</option></select>
+								<select id="myDropdown" class="form-control" (ngModelChange)="onChange($event)"><option *ngFor="let item of clusters.items | async">{{item.id}}</option></select>
 							</div>
 							<label class="col-sm-4 control-label" for="configFile">CNTK Configuration File</label>
 							<div class="col-sm-8">
 								<input class="form-control" id="configFile" type="text" placeholder="<>">
 							</div>
-							</div>
-							<div class="form-group">
+						</div>
+						<div class="form-group">
 							<label class="col-sm-4 control-label" for="dataDir">Data Directory</label>
 							<div class="col-sm-8">
 								<input class="form-control" id="dataDir" type="text" placeholder="<>">
 							</div>
 							<div class="form-group">
-							<label class="col-sm-4 control-label" for="outputDir">Output Directory</label>
-							<div class="col-sm-8">
-								<input class="form-control" id="outputDir" type="text" placeholder="<>">
+								<label class="col-sm-4 control-label" for="outputDir">Output Directory</label>
+								<div class="col-sm-8">
+									<input class="form-control" id="outputDir" type="text" placeholder="<>">
+								</div>
 							</div>
 						</div>
 					</div>
 				</div>
-			</div>
-			<div class="modal-footer">
-				<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-				<button type="button" class="btn btn-primary" data-dismiss="modal" (click)="submit_run()">Save changes</button>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+					<button type="button" class="btn btn-primary" data-dismiss="modal" (click)="submit_run()">Save changes</button>
+				</div>
 			</div>
 		</div>
 	</div>
 </div>
-
-<div id="clusters" class="col-sm-2 col-md-2">
+<div id="clusters" class="col-sm-2 col-md-2 col-lg-2">
 	<div class="box-body table-responsive">
 		<h4>Clusters</h4>
 		<table class="table no-margin">
@@ -86,7 +86,7 @@
 						<td>{{item.id}}</td>
 						<td>{{item.state}}</td>
 						<td>{{(item.stateTransitionTime - item.creationTime)/1000}} s</td>
-						<td><button type="button" class="btn btn-default" (click)="download_data(item)">Download</button>
+						<td><button type="button" class="btn btn-default" (click)="download_data()">Download</button>
 					</tr>
 				</tbody>
 			</table>
