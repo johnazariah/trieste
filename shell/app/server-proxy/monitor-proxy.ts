@@ -22,4 +22,17 @@ export default class MonitorProxy {
             })
         });
     }
+
+    public downloadModel(cluster_id, run_id) {
+        const exec = require('child_process').exec;
+
+        var result : any;
+        
+        let downloadModelCommand = `cd .. && python trieste.py run download-model --cluster-id ${cluster_id} --run-id ${run_id}`;
+        
+        exec(downloadModelCommand, (_err, _stdout, _stderr) => {
+            if (_err) {console.log(_err); return; }
+            alert("Downloaded Model!")
+        });
+    }
 }

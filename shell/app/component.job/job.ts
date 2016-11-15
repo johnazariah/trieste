@@ -59,6 +59,10 @@ export class JobComponent {
     console.log("here i am" + val);
   }
 
+  public download_data(item) {
+    monitorProxy.downloadModel(item.id);
+  }
+
   public showChart(clusterId, runId) {
     console.log(`I would show the graph for ${clusterId}/${runId} here`);
 

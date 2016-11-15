@@ -40,14 +40,12 @@
 		<table class="table no-margin">
 			<thead>
 				<tr>
-					<th>#</th>
 					<th>Id</th>
 					<th>State</th>
 				</tr>
 			</thead>
 			<tbody *ngFor="let item of clusters.items | async; let i = index" (click)="select_cluster(item)">
 				<tr>
-					<td>{{i}}</td>
 					<td>{{item.id}}</td>
 					<td>{{item.state}}</td>
 				</tr>
@@ -62,16 +60,18 @@
 			<table class="table no-margin">
 				<thead>
 					<tr>
-						<th>#</th>
 						<th>Id</th>
 						<th>State</th>
+						<th>Duration</th>
+						<th>Download</th>
 					</tr>
 				</thead>
 				<tbody *ngFor="let item of runs.items | async; let i = index" (click)="select_run(item)">
 					<tr>
-						<td>{{i}}</td>
 						<td>{{item.id}}</td>
 						<td>{{item.state}}</td>
+						<td>{{(item.stateTransitionTime - item.creationTime)/1000}} s</td>
+						<td><button type="button" class="btn btn-default" (click)="download_data(item)">Download</button>
 					</tr>
 				</tbody>
 			</table>
