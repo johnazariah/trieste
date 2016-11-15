@@ -14,50 +14,87 @@
         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
         <h4 class="modal-title" id="myModalLabel">Create Cluster</h4>
       </div>
-      <div class="modal-body">
-        <div class="box box-primary">
-            <div class="box-header with-border">
-              <h3 class="box-title">Credentials</h3>
-              <div class="box-tools pull-right">
-                <button class="btn btn-box-tool" type="button" data-widget="collapse"><i class="fa fa-minus">-</i></button>
-              </div>
-            </div>
-            <div class="box-body" style="display: block;">
-              <div class="panel panel-default">
-                <div class="panel-heading">
-                  <h3 class="panel-title">Batch Credentials</h3>
-                </div>
-                <div class="panel-body">
-                  Panel content
-                </div>
-              </div>
-              <div class="panel panel-default">
-                <div class="panel-heading">
-                  <h3 class="panel-title">Storage Credentials</h3>
-                </div>
-                <div class="panel-body">
-                  Panel content
-                </div>
-              </div>
-            </div>
+      <div class="modal-body box-header with-border">
+        <div class="form-group">
+          <label class="col-sm-4 control-label" for="poolName">Pool Name</label>
+          <div class="col-sm-8">
+            <input class="form-control" id="poolName" type="text" placeholder="cntk-gpu-pool">
           </div>
-          <div class="box box-primary">
-            <div class="box-header with-border">
-              <h3 class="box-title">Cluster Specification</h3>
-            </div>
-            <div class="box-body" style="display: block;">
-              <div class="form-group">
-                <label class="col-sm-2 control-label" for="poolName">Pool Name</label>
-                <div class="col-sm-10">
-                  <input class="form-control" id="poolName" type="text" placeholder="Pool Name">
-                </div>
-              </div>
-            </div>
+        </div>
+        <div class="form-group">
+          <label class="col-sm-4 control-label" for="vmSize">VM SKU</label>
+          <div class="col-sm-8">
+            <select class="form-control" id="vmSize">
+              <option value="x">STANDARD_A1</option>
+              <option value="x">STANDARD_A2</option>
+              <option value="x">STANDARD_A3</option>
+              <option value="x">STANDARD_A4</option>
+              <option value="x">STANDARD_A5</option>
+              <option value="x">STANDARD_A6</option>
+              <option value="x">STANDARD_A7</option>
+              <option value="x">STANDARD_A8</option>
+              <option value="x">STANDARD_A9</option>
+              <option value="x">STANDARD_A10</option>
+              <option value="x">STANDARD_A11</option>
+              <option value="x">STANDARD_D1</option>
+              <option value="x">STANDARD_D2</option>
+              <option value="x">STANDARD_D3</option>
+              <option value="x">STANDARD_D4</option>
+              <option value="x">STANDARD_D11</option>
+              <option value="x">STANDARD_D12</option>
+              <option value="x">STANDARD_D13</option>
+              <option value="x">STANDARD_D14</option>
+              <option value="x">STANDARD_D1_V2</option>
+              <option value="x">STANDARD_D2_V2</option>
+              <option value="x">STANDARD_D3_V2</option>
+              <option value="x">STANDARD_D4_V2</option>
+              <option value="x">STANDARD_D5_V2</option>
+              <option value="x">STANDARD_D11_V2</option>
+              <option value="x">STANDARD_D12_V2</option>
+              <option value="x">STANDARD_D13_V2</option>
+              <option value="x">STANDARD_D14_V2</option>
+              <option value="x">STANDARD_D15_V2</option>
+              <option value="x">STANDARD_F1</option>
+              <option value="x">STANDARD_F2</option>
+              <option value="x">STANDARD_F4</option>
+              <option value="x">STANDARD_F8</option>
+              <option value="x">STANDARD_F16</option>
+              <option value="x">STANDARD_G1</option>
+              <option value="x">STANDARD_G2</option>
+              <option value="x">STANDARD_G3</option>
+              <option value="x">STANDARD_G4</option>
+              <option value="x">STANDARD_G5</option>
+              <option value="x">STANDARD_H8</option>
+              <option value="x">STANDARD_H16</option>
+              <option value="x">STANDARD_H8M</option>
+              <option value="x">STANDARD_H16M</option>
+              <option value="x">STANDARD_H16R</option>
+              <option value="x">STANDARD_H16MR</option>
+              <option value="x">STANDARD_NV6</option>
+              <option value="x">STANDARD_NV12</option>
+              <option value="x">STANDARD_NV24</option>
+              <option value="x">STANDARD_NC6</option>
+              <option value="x">STANDARD_NC12</option>
+              <option value="x">STANDARD_NC24</option>
+            </select>
           </div>
+        </div>
+        <div class="form-group">
+          <label class="col-sm-4 control-label" for="vmCount">VM Count</label>
+          <div class="col-sm-8">
+            <input class="form-control" id="vmCount" type="text" placeholder="1/2/4...">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="col-sm-4 control-label" for="dockerImageName">Docker Image Name</label>
+          <div class="col-sm-8">
+            <input class="form-control" id="dockerImageName" type="text" placeholder="cntk-gpu-refdata">
+          </div>
+        </div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-        <button type="button" class="btn btn-primary">Save changes</button>
+        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary">Create</button>
       </div>
     </div>
   </div>
