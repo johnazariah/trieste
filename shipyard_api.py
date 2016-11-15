@@ -264,9 +264,9 @@ class RunApi(ShipyardApi):
         logger.debug('file {} retrieved from job={} task={} bytes={}'.format(file, cluster_id, run_id, destination.stat().st_size))
 
     def download_data_model(self, run_id, cluster_id):
-        file = ''
+        file = 'wd/Models/ConvNet_MNIST'
         stream = self.batch_client.file.get_from_task(cluster_id, run_id, file)
-        destination = pathlib.Path(cluster_id, run_id, file)
+        destination = pathlib.Path("C:\\Users\\sc16\\Desktop\\inference\\ConvNet_MNIST")
         destination.parent.mkdir(mode=0o750, parents=True, exist_ok=True)
         with destination.open('wb') as f:
             for fdata in stream:
