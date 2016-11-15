@@ -2,6 +2,7 @@
 .vscode
 __pycache__/
 config/
+data/
 batch_shipyard/
 node_modules/
 **/app/**/*.js

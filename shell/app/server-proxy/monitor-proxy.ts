@@ -6,7 +6,7 @@ export default class MonitorProxy {
         
         let downloadLogCommand = `cd .. && python trieste.py run get-data --cluster-id ${cluster_id} --run-id ${run_id}`;
         
-        let runDirectory = `${cluster_id}\\${run_id}`
+        let runDirectory = `data\\${cluster_id}\\${run_id}`
         let inputFile  = `${runDirectory}\\stderr.txt`;
         let outputFile = `${runDirectory}\\progress.json`;
         let parseLogToJsonCommand = `cd .. && python cntklogparser.py ${inputFile} > ${outputFile}`
@@ -17,7 +17,7 @@ export default class MonitorProxy {
             exec(parseLogToJsonCommand, (__err, __stdout, __stderr) => {
                 if (__err) {console.log(__err); return; }
 
-                result = JSON.parse(require('fs').readFileSync(`..\\${cluster_id}\\${run_id}\\progress.json`, 'utf8'));
+                result = JSON.parse(require('fs').readFileSync(`..\\data\\${cluster_id}\\${run_id}\\progress.json`, 'utf8'));
                 do_something_with_json(result);
             })
         });

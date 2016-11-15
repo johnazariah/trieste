@@ -255,7 +255,7 @@ class RunApi(ShipyardApi):
         file = 'stderr.txt'
         print("Job : {}; Task : {}".format(cluster_id, run_id))
         stream = self.batch_client.file.get_from_task(cluster_id, run_id, file)
-        destination = pathlib.Path(cluster_id, run_id, file)
+        destination = pathlib.Path("data", cluster_id, run_id, file)
         destination.parent.mkdir(mode=0o750, parents=True, exist_ok=True)
         with destination.open('wb') as f:
             for fdata in stream:
